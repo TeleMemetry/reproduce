@@ -79,6 +79,17 @@ HTML = """<!doctype html>
       font-weight: 600;
     }
 
+    .launch-note {
+      max-width: 850px;
+      margin: -8px 0 24px;
+      border-left: 4px solid var(--teal);
+      background: rgba(56, 125, 131, .08);
+      padding: 13px 15px;
+      color: #38424b;
+      font-size: 17px;
+      font-weight: 700;
+    }
+
     .controls,
     .result,
     .log,
@@ -240,6 +251,7 @@ HTML = """<!doctype html>
   </div>
   <h1>Memory Rail Demo</h1>
   <p class="lede">Run a public verified-recall benchmark, generate bounded evidence packets, write SHA256 receipts, and produce an AI-auditable result package.</p>
+  <p class="launch-note">First launch may take a few minutes while Brev provisions the instance and starts this demo server. Let it finish; once this page is open, the benchmark itself is local and lightweight.</p>
 
   <section class="controls" aria-label="Benchmark controls">
     <label>Turns <input id="turns" type="number" min="1" max="100000" value="3000"></label>
@@ -283,6 +295,8 @@ HTML = """<!doctype html>
   var steps = ['generate', 'verify', 'hash', 'package'].map(function (id) {
     return document.getElementById('step-' + id);
   });
+  var progressDelayMs = 2000;
+  var minimumRunMs = 10000;
 
   function setRunning(running) {
     runButton.disabled = running;
@@ -297,17 +311,26 @@ HTML = """<!doctype html>
     logEl.textContent = '';
   }
 
-  function completeSteps() {
+  function beginSteps() {
     steps.forEach(function (step, index) {
-      setTimeout(function () { step.classList.add('done'); }, index * 260);
+      setTimeout(function () { step.classList.add('done'); }, (index + 1) * progressDelayMs);
+    });
+  }
+
+  function waitForMinimum(startedAt) {
+    var elapsed = Date.now() - startedAt;
+    var remaining = Math.max(0, minimumRunMs - elapsed);
+    return new Promise(function (resolve) {
+      setTimeout(resolve, remaining);
     });
   }
 
   runButton.addEventListener('click', function () {
     resetUi();
     setRunning(true);
-    statusEl.textContent = 'Running benchmark and verification...';
-    completeSteps();
+    var startedAt = Date.now();
+    statusEl.textContent = 'Running workflow: telemetry, packets, recall verification, receipts, and audit package...';
+    beginSteps();
 
     fetch('/run', {
       method: 'POST',
@@ -319,6 +342,8 @@ HTML = """<!doctype html>
       })
     }).then(function (response) {
       return response.json();
+    }).then(function (data) {
+      return waitForMinimum(startedAt).then(function () { return data; });
     }).then(function (data) {
       if (!data.ok) {
         throw new Error(data.error || 'Benchmark failed');
