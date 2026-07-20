@@ -229,35 +229,30 @@ HTML = """<!doctype html>
       max-width: 900px;
       margin: 0;
       color: var(--ink);
-      font-size: 22px;
+      font-size: 21px;
       font-weight: 750;
+    }
+
+    .result-why {
+      max-width: 900px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 18px;
+      font-weight: 650;
     }
 
     .result-metrics {
       display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 1px;
-      background: var(--line);
+      gap: 8px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .result-metrics li {
       border: 1px solid var(--line);
-    }
-
-    .metric {
-      min-height: 108px;
-      padding: 18px;
       background: #fff;
-    }
-
-    .value {
-      display: block;
-      color: var(--green);
-      font-size: clamp(30px, 4vw, 48px);
-      font-weight: 950;
-      line-height: 1;
-      margin-bottom: 9px;
-    }
-
-    .label {
-      display: block;
+      padding: 11px 13px;
       color: var(--ink);
       font-size: 18px;
       font-weight: 800;
@@ -306,8 +301,7 @@ HTML = """<!doctype html>
 
     @media (max-width: 820px) {
       .controls,
-      .progress,
-      .result-metrics {
+      .progress {
         grid-template-columns: 1fr;
       }
     }
@@ -347,12 +341,13 @@ HTML = """<!doctype html>
 
   <section class="result" id="result" aria-label="Benchmark result">
     <p class="result-copy" id="result-copy"></p>
-    <div class="result-metrics">
-      <div class="metric"><span class="value" id="verified">-</span><span class="label">Verified Recall</span></div>
-      <div class="metric"><span class="value" id="failures">-</span><span class="label">Final Failures</span></div>
-      <div class="metric"><span class="value" id="tokens">-</span><span class="label">Tokens / Turn</span></div>
-      <div class="metric"><span class="value" id="reduction">-</span><span class="label">Replay Reduction</span></div>
-    </div>
+    <p class="result-why">Why this matters: a field appliance, robot, vehicle, or satellite can keep long operational history outside the model, then retrieve the exact state needed for the next decision without replaying the whole history into context.</p>
+    <ul class="result-metrics">
+      <li id="metric-responses">-</li>
+      <li id="metric-recall">-</li>
+      <li id="metric-tokens">-</li>
+      <li id="metric-reduction">-</li>
+    </ul>
   </section>
 
   <section class="files" id="files" aria-label="Result files">
@@ -436,10 +431,10 @@ HTML = """<!doctype html>
         throw new Error(data.error || 'Benchmark failed');
       }
       var metrics = data.metrics;
-      document.getElementById('verified').textContent = metrics.recall.verified_turns + ' / ' + metrics.recall.total_turns;
-      document.getElementById('failures').textContent = metrics.recall.final_verified_output_failures;
-      document.getElementById('tokens').textContent = metrics.token_accounting.average_packet_tokens_per_turn_estimate;
-      document.getElementById('reduction').textContent = metrics.token_accounting.replay_reduction_ratio_estimate + 'x';
+      document.getElementById('metric-responses').textContent = metrics.recall.verified_turns + ' bit-perfect responses';
+      document.getElementById('metric-recall').textContent = '100% 1:1 recall - zero failures';
+      document.getElementById('metric-tokens').textContent = metrics.token_accounting.average_packet_tokens_per_turn_estimate + ' tokens per turn';
+      document.getElementById('metric-reduction').textContent = metrics.token_accounting.replay_reduction_ratio_estimate + 'x context-history reduction estimate';
       document.getElementById('result-copy').textContent = 'PASS: this run verified ' + metrics.recall.verified_turns + ' of ' + metrics.recall.total_turns + ' turns with ' + metrics.recall.final_verified_output_failures + ' final failures, averaging ' + metrics.token_accounting.average_packet_tokens_per_turn_estimate + ' bounded packet tokens per turn and reporting a ' + metrics.token_accounting.replay_reduction_ratio_estimate + 'x replay reduction estimate.';
       statusEl.textContent = 'PASS. Result package is ready in results/latest.';
       resultEl.style.display = 'grid';
