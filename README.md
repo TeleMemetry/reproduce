@@ -10,6 +10,8 @@ This repo is intentionally small. It does not contain TeleMemetry production eng
 4. SHA256 artifact receipts
 5. Reproducible result packages for independent AI review
 
+This repo is not the TeleMemetry vs RAG comparison benchmark. See `LAUNCHABLE_BOUNDARY.md` for the Launchable separation rule.
+
 ## Quick Start
 
 ### NVIDIA Brev Web Demo
