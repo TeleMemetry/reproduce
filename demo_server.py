@@ -200,7 +200,7 @@ HTML = """<!doctype html>
     .progress-fill {
       width: 0%;
       height: 100%;
-      background: linear-gradient(90deg, var(--teal), var(--green));
+      background: var(--green);
       transition: width .45s ease;
     }
 
@@ -228,8 +228,8 @@ HTML = """<!doctype html>
     .result-copy {
       max-width: 900px;
       margin: 0;
-      color: var(--ink);
-      font-size: 21px;
+      color: var(--green);
+      font-size: 22pt;
       font-weight: 750;
     }
 
@@ -253,8 +253,8 @@ HTML = """<!doctype html>
       border: 1px solid var(--line);
       background: #fff;
       padding: 11px 13px;
-      color: var(--ink);
-      font-size: 18px;
+      color: var(--green);
+      font-size: 22pt;
       font-weight: 800;
     }
 
@@ -317,7 +317,6 @@ HTML = """<!doctype html>
   <ul class="demo-points">
     <li>Watch thousands of operational recall events become instantly queryable without replaying conversation history.</li>
     <li>Every answer is backed by verifiable evidence and SHA256 receipts, available in the result links below after the run.</li>
-    <li>First launch may take a few minutes while Brev provisions the instance and starts this demo server. Let it finish; once this page is open, the benchmark itself is local and lightweight.</li>
   </ul>
   <p class="scope-note">This is a public reproduction harness, not the private production engine. It mathematically verifies this measurement workflow and proves the artifact trail.</p>
 
