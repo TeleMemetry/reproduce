@@ -42,13 +42,32 @@ HTML = """<!doctype html>
 
     body {
       margin: 0;
-      background: var(--bg);
+      background: #070b12;
       color: var(--ink);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
       line-height: 1.45;
     }
 
+    body::before {
+      content: "";
+      position: fixed;
+      inset: -20%;
+      z-index: -2;
+      background: url("https://telememetry.com/space-bkg.jpg") center center / cover no-repeat;
+      transform: rotate(12deg);
+      opacity: .86;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background: linear-gradient(rgba(7, 11, 18, .12), rgba(7, 11, 18, .38));
+    }
+
     main {
+      position: relative;
       width: min(1080px, calc(100% - 32px));
       margin: 0 auto;
       padding: 42px 0 64px;
@@ -59,7 +78,7 @@ HTML = """<!doctype html>
       align-items: center;
       gap: 10px;
       margin-bottom: 26px;
-      color: #32363d;
+      color: #fff;
       font-size: 24px;
       font-weight: 350;
       letter-spacing: .02em;
@@ -68,7 +87,7 @@ HTML = """<!doctype html>
     .brand svg {
       width: 34px;
       height: 34px;
-      color: #13233a;
+      color: #fff;
     }
 
     h1 {
@@ -76,6 +95,7 @@ HTML = """<!doctype html>
       font-size: clamp(38px, 6vw, 72px);
       line-height: 1.02;
       letter-spacing: -.02em;
+      color: #fff;
     }
 
     .demo-points {
@@ -83,7 +103,7 @@ HTML = """<!doctype html>
       gap: 8px;
       max-width: 850px;
       margin: 0 0 24px;
-      background: rgba(56, 125, 131, .08);
+      background: rgba(255, 255, 255, .9);
       padding: 16px 18px;
       color: #38424b;
       font-size: 17px;
@@ -101,9 +121,32 @@ HTML = """<!doctype html>
     .scope-note {
       max-width: 850px;
       margin: -6px 0 24px;
+      background: rgba(255, 255, 255, .9);
+      padding: 14px 16px;
       color: var(--ink);
       font-size: 18px;
       font-weight: 850;
+    }
+
+    .hero-cta {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 52px;
+      margin: 0 0 24px;
+      border: 1px solid rgba(255, 255, 255, .3);
+      background: var(--green);
+      color: #fff;
+      padding: 0 20px;
+      font-size: 18px;
+      font-weight: 900;
+      text-decoration: none;
+    }
+
+    .hero-cta:hover {
+      background: #5c980d;
+      color: #fff;
+      text-decoration: none;
     }
 
     .controls,
@@ -145,6 +188,8 @@ HTML = """<!doctype html>
 
     .limits {
       margin: -4px 0 18px;
+      background: rgba(255, 255, 255, .9);
+      padding: 12px 14px;
       color: var(--muted);
       font-size: 15px;
       font-weight: 700;
@@ -177,9 +222,10 @@ HTML = """<!doctype html>
     .status {
       min-height: 28px;
       margin: 0 0 18px;
-      color: var(--teal);
+      color: #fff;
       font-size: 18px;
       font-weight: 800;
+      text-shadow: 0 2px 12px rgba(0, 0, 0, .45);
     }
 
     .progress {
@@ -319,8 +365,9 @@ HTML = """<!doctype html>
     <li>Every answer is backed by verifiable evidence and SHA256 receipts, available in the result links below after the run.</li>
   </ul>
   <p class="scope-note">This is a public reproduction harness, not the private production engine. It mathematically verifies this measurement workflow and proves the artifact trail.</p>
+  <a class="hero-cta" href="#run-panel">Try the Docker Version of the TeleMemetry Engine</a>
 
-  <section class="controls" aria-label="Benchmark controls">
+  <section class="controls" id="run-panel" aria-label="Benchmark controls">
     <label>Turns <input id="turns" type="number" min="1" max="10000" value="3000"></label>
     <label>Fields <input id="fields" type="number" min="1" max="10" value="10"></label>
     <label>Episodes <input id="episodes" type="number" min="1" max="100" value="20"></label>
