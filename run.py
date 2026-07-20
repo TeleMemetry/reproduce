@@ -180,6 +180,9 @@ def main() -> int:
     prompt_template = Path("prompt.md")
     if prompt_template.exists():
         shutil.copyfile(prompt_template, run_dir / "prompt.md")
+    audit_prompt_template = Path("AUDIT_PROMPT.md")
+    if audit_prompt_template.exists():
+        shutil.copyfile(audit_prompt_template, run_dir / "AUDIT_PROMPT.md")
 
     verify_text = (
         "TeleMemetry public reproduce verification\n"
@@ -213,12 +216,15 @@ def main() -> int:
         "- TeleMemetry production engine internals.\n"
         "\n"
         "Next step: paste prompt.md into an AI assistant and attach or paste the result files.\n"
+        "For a skeptical review, use AUDIT_PROMPT.md with the same result files.\n"
     )
     (run_dir / "RESULT_SUMMARY.txt").write_text(summary_text, encoding="utf-8", newline="\n")
 
     manifest_files = ["dataset.jsonl", "evidence_packets.jsonl", "outputs.jsonl", "metrics.json", "VERIFY.txt", "RESULT_SUMMARY.txt"]
     if (run_dir / "prompt.md").exists():
         manifest_files.append("prompt.md")
+    if (run_dir / "AUDIT_PROMPT.md").exists():
+        manifest_files.append("AUDIT_PROMPT.md")
     manifest = build_manifest(run_dir, manifest_files)
     (run_dir / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8", newline="\n")
 

@@ -405,6 +405,7 @@ HTML = """<!doctype html>
     <h2>Result Package</h2>
     <a href="/file/results/latest/RESULT_SUMMARY.txt" target="_blank">Open Result Summary ↗</a>
     <a href="/file/results/latest/prompt.md" target="_blank">Open AI Audit Prompt ↗</a>
+    <a href="/file/results/latest/AUDIT_PROMPT.md" target="_blank">Open Independent Audit Prompt ↗</a>
     <a href="/file/results/latest/metrics.json" target="_blank">Open Metrics ↗</a>
     <a href="/file/results/latest/manifest.json" target="_blank">Open SHA256 Manifest ↗</a>
     <a href="/file/results/latest/dataset.jsonl" target="_blank">Open Raw Telemetry In ↗</a>

@@ -101,6 +101,7 @@ Expected files:
 - `VERIFY.txt` - human-readable verification summary
 - `RESULT_SUMMARY.txt` - plain-language result summary
 - `prompt.md` - prompt for ChatGPT, Codex, Claude, Gemini, or another AI reviewer
+- `AUDIT_PROMPT.md` - skeptical audit prompt for challenging the result package and claim boundaries
 
 ## What It Proves
 
@@ -158,6 +159,8 @@ python3 run.py --turns 10000 --fields 10 --episodes 20
 ## AI Review
 
 After running the benchmark, paste `results/latest/prompt.md` into an AI assistant and attach or paste the generated result files. The prompt asks the AI to inspect the metrics, receipts, scope, and supported claims.
+
+For a tougher review, paste `results/latest/AUDIT_PROMPT.md` into an AI assistant with the same generated files. That prompt asks the reviewer to inspect the code path, token math, SHA256 receipts, scale limits, scope leakage, and claims that remain outside this public reproduction kit.
 
 ## License
 
