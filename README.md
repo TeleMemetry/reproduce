@@ -103,6 +103,8 @@ Expected files:
 - `prompt.md` - prompt for ChatGPT, Codex, Claude, Gemini, or another AI reviewer
 - `AUDIT_PROMPT.md` - skeptical audit prompt for challenging the result package and claim boundaries
 
+`verify.py` recomputes manifest hashes, source-record hashes, evidence-packet token estimates, replay-reduction math, and exact output matches from the generated artifacts.
+
 ## What It Proves
 
 This kit proves that, within this public benchmark scope, a reviewer can:
