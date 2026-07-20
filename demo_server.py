@@ -274,9 +274,14 @@ HTML = """<!doctype html>
     .result-copy {
       max-width: 900px;
       margin: 0;
-      color: var(--green);
+      color: var(--ink);
       font-size: 22pt;
       font-weight: 750;
+    }
+
+    .metric-em {
+      color: var(--green);
+      font-weight: 900;
     }
 
     .result-why {
@@ -486,6 +491,32 @@ HTML = """<!doctype html>
     });
   }
 
+  function setPassText(metrics) {
+    var copy = document.getElementById('result-copy');
+    copy.textContent = '';
+
+    function text(value) {
+      copy.appendChild(document.createTextNode(value));
+    }
+
+    function metric(value) {
+      var span = document.createElement('span');
+      span.className = 'metric-em';
+      span.textContent = value;
+      copy.appendChild(span);
+    }
+
+    text('PASS: this run verified ');
+    metric(metrics.recall.verified_turns + ' of ' + metrics.recall.total_turns + ' turns');
+    text(' with ');
+    metric(metrics.recall.final_verified_output_failures + ' final failures');
+    text(', averaging ');
+    metric(metrics.token_accounting.average_packet_tokens_per_turn_estimate + ' bounded packet tokens per turn');
+    text(' and reporting a ');
+    metric(metrics.token_accounting.replay_reduction_ratio_estimate + 'x replay reduction estimate');
+    text('.');
+  }
+
   runButton.addEventListener('click', function () {
     resetUi();
     setRunning(true);
@@ -514,7 +545,7 @@ HTML = """<!doctype html>
       document.getElementById('metric-recall').textContent = '100% 1:1 recall - zero failures';
       document.getElementById('metric-tokens').textContent = metrics.token_accounting.average_packet_tokens_per_turn_estimate + ' tokens per turn';
       document.getElementById('metric-reduction').textContent = metrics.token_accounting.replay_reduction_ratio_estimate + 'x context-history reduction estimate';
-      document.getElementById('result-copy').textContent = 'PASS: this run verified ' + metrics.recall.verified_turns + ' of ' + metrics.recall.total_turns + ' turns with ' + metrics.recall.final_verified_output_failures + ' final failures, averaging ' + metrics.token_accounting.average_packet_tokens_per_turn_estimate + ' bounded packet tokens per turn and reporting a ' + metrics.token_accounting.replay_reduction_ratio_estimate + 'x replay reduction estimate.';
+      setPassText(metrics);
       statusEl.textContent = 'PASS. Result package is ready in results/latest.';
       resultEl.style.display = 'grid';
       filesEl.style.display = 'block';
