@@ -25,7 +25,7 @@ HTML = """<!doctype html>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Launch TeleMemetry</title>
+  <title>Verify Bounded AI Memory</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <style>
     :root {
@@ -109,6 +109,16 @@ HTML = """<!doctype html>
       font-size: 17px;
       font-weight: 700;
       list-style: none;
+    }
+
+    .hero-subhead {
+      max-width: 850px;
+      margin: 0 0 14px;
+      color: #fff;
+      font-size: 23px;
+      font-weight: 750;
+      line-height: 1.35;
+      text-shadow: 0 2px 14px rgba(0, 0, 0, .5);
     }
 
     .demo-points li::before {
@@ -252,16 +262,32 @@ HTML = """<!doctype html>
 
     .step {
       border: 1px solid var(--line);
-      background: rgba(255, 255, 255, .7);
+      background: rgba(255, 255, 255, .62);
       padding: 14px;
       color: var(--muted);
       font-weight: 800;
+      cursor: default;
+    }
+
+    .step::before {
+      content: "";
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      margin-right: 9px;
+      border: 2px solid currentColor;
+      border-radius: 999px;
+      vertical-align: 1px;
     }
 
     .step.done {
       border-color: rgba(102, 168, 15, .45);
       color: var(--green);
       background: rgba(102, 168, 15, .08);
+    }
+
+    .step.done::before {
+      background: currentColor;
     }
 
     .result {
@@ -275,8 +301,8 @@ HTML = """<!doctype html>
       max-width: 900px;
       margin: 0;
       color: var(--ink);
-      font-size: 22pt;
-      font-weight: 750;
+      font-size: 18px;
+      font-weight: 700;
     }
 
     .metric-em {
@@ -294,7 +320,8 @@ HTML = """<!doctype html>
 
     .result-metrics {
       display: grid;
-      gap: 8px;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
       margin: 0;
       padding: 0;
       list-style: none;
@@ -303,10 +330,43 @@ HTML = """<!doctype html>
     .result-metrics li {
       border: 1px solid var(--line);
       background: #fff;
-      padding: 11px 13px;
+      min-height: 92px;
+      padding: 14px 15px;
       color: var(--green);
-      font-size: 22pt;
-      font-weight: 800;
+      font-size: 21px;
+      line-height: 1.12;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+    }
+
+    .claim-boundaries {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .claim-box {
+      border: 1px solid var(--line);
+      background: #fff;
+      padding: 14px 16px;
+    }
+
+    .claim-box h3 {
+      margin: 0 0 8px;
+      color: var(--ink);
+      font-size: 17px;
+    }
+
+    .claim-box ul {
+      margin: 0;
+      padding-left: 19px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .claim-box li {
+      margin: 4px 0;
     }
 
     .files {
@@ -352,7 +412,9 @@ HTML = """<!doctype html>
 
     @media (max-width: 820px) {
       .controls,
-      .progress {
+      .progress,
+      .result-metrics,
+      .claim-boundaries {
         grid-template-columns: 1fr;
       }
     }
@@ -364,9 +426,10 @@ HTML = """<!doctype html>
     <svg width="256" height="256" viewBox="0 0 256 256" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke="currentColor" stroke-width="14" stroke-linejoin="round"><rect x="42" y="42" width="108" height="108" rx="8"/><rect x="106" y="106" width="108" height="108" rx="8"/></g></svg>
     TeleMemetry&trade;
   </div>
-  <h1>Launch TeleMemetry&trade;</h1>
+  <h1>Verify bounded AI memory in one click</h1>
+  <p class="hero-subhead">This benchmark demonstrates how AI can operate over long-running telemetry without replaying historical context.</p>
   <ul class="demo-points">
-    <li>Watch thousands of operational recall events become instantly queryable without replaying conversation history.</li>
+    <li>Run a scoped verified-recall benchmark with bounded evidence packets and replay-reduction accounting.</li>
     <li>Every answer is backed by verifiable evidence and SHA256 receipts, available in the result links below after the run.</li>
   </ul>
   <p class="scope-note">This is a public reproduction harness, not the private production engine. It mathematically verifies this measurement workflow and proves the artifact trail.</p>
@@ -376,7 +439,7 @@ HTML = """<!doctype html>
     <label>Turns <input id="turns" type="number" min="1" max="10000" value="3000"></label>
     <label>Fields <input id="fields" type="number" min="1" max="10" value="10"></label>
     <label>Episodes <input id="episodes" type="number" min="1" max="100" value="20"></label>
-    <button id="run">Run Demo</button>
+    <button id="run">Run Verification</button>
   </section>
   <p class="limits"><strong>Public demo limits:</strong> up to 10,000 turns, 10 fields, and 100 episodes. These caps keep browser response, result files, and Brev instance time predictable. Need a bigger or domain-specific run? <a href="https://telememetry.com/reproduce.html" target="_blank" rel="noopener">Request a custom benchmark</a>.</p>
 
@@ -391,14 +454,32 @@ HTML = """<!doctype html>
   </section>
 
   <section class="result" id="result" aria-label="Benchmark result">
-    <p class="result-copy" id="result-copy"></p>
-    <p class="result-why">Why this matters: a field appliance, robot, vehicle, or satellite can keep long operational history outside the model, then retrieve the exact state needed for the next decision without replaying the whole history into context.</p>
     <ul class="result-metrics">
       <li id="metric-responses">-</li>
       <li id="metric-recall">-</li>
       <li id="metric-tokens">-</li>
       <li id="metric-reduction">-</li>
     </ul>
+    <p class="result-copy" id="result-copy"></p>
+    <p class="result-why">Why this matters: a field appliance, robot, vehicle, or satellite can keep long operational history outside the model, then retrieve the exact state needed for the next decision without replaying the whole history into context.</p>
+    <div class="claim-boundaries" aria-label="Benchmark claim boundaries">
+      <div class="claim-box">
+        <h3>What this proves</h3>
+        <ul>
+          <li>Exact operational-state recall inside this public benchmark scope.</li>
+          <li>Bounded evidence packets instead of full-history replay.</li>
+          <li>SHA256 receipts for artifact-change detection.</li>
+        </ul>
+      </div>
+      <div class="claim-box">
+        <h3>What this does not prove</h3>
+        <ul>
+          <li>Universal semantic memory or chatbot reasoning quality.</li>
+          <li>Robotics, AV, or production safety certification.</li>
+          <li>Private TeleMemetry production engine internals.</li>
+        </ul>
+      </div>
+    </div>
   </section>
 
   <section class="files" id="files" aria-label="Result files">
@@ -463,7 +544,7 @@ HTML = """<!doctype html>
 
   function setRunning(running) {
     runButton.disabled = running;
-    runButton.textContent = running ? 'Running...' : 'Run Demo';
+    runButton.textContent = running ? 'Running...' : 'Run Verification';
   }
 
   function resetUi() {
@@ -507,7 +588,7 @@ HTML = """<!doctype html>
       copy.appendChild(span);
     }
 
-    text('PASS: this run verified ');
+    text('PASS: within this public benchmark scope, this run verified ');
     metric(metrics.recall.verified_turns + ' of ' + metrics.recall.total_turns + ' turns');
     text(' with ');
     metric(metrics.recall.final_verified_output_failures + ' final failures');
@@ -542,10 +623,11 @@ HTML = """<!doctype html>
         throw new Error(data.error || 'Benchmark failed');
       }
       var metrics = data.metrics;
-      document.getElementById('metric-responses').textContent = metrics.recall.verified_turns + ' bit-perfect responses';
-      document.getElementById('metric-recall').textContent = '100% 1:1 recall - zero failures';
-      document.getElementById('metric-tokens').textContent = metrics.token_accounting.average_packet_tokens_per_turn_estimate + ' tokens per turn';
-      document.getElementById('metric-reduction').textContent = metrics.token_accounting.replay_reduction_ratio_estimate + 'x context-history reduction estimate';
+      var exactRecallPercent = Math.round(metrics.recall.exact_match_rate * 10000) / 100;
+      document.getElementById('metric-responses').textContent = metrics.recall.verified_turns + ' / ' + metrics.recall.total_turns + ' verified';
+      document.getElementById('metric-recall').textContent = exactRecallPercent + '% exact recall';
+      document.getElementById('metric-tokens').textContent = metrics.token_accounting.average_packet_tokens_per_turn_estimate + ' bounded packet tokens per turn';
+      document.getElementById('metric-reduction').textContent = metrics.token_accounting.replay_reduction_ratio_estimate + 'x replay reduction estimate';
       setPassText(metrics);
       statusEl.textContent = 'PASS. Result package is ready in results/latest.';
       resultEl.style.display = 'grid';
