@@ -12,6 +12,26 @@ This repo is intentionally small. It does not contain TeleMemetry production eng
 
 ## Quick Start
 
+### NVIDIA Brev
+
+1. Open the Launchable.
+2. Click **Open Notebook**.
+3. Open `START_HERE.ipynb`.
+4. Click **Run All**.
+
+Why: this avoids terminal knowledge. The notebook runs the benchmark, verifies the package, and prints the result summary.
+
+Expected result:
+
+```text
+Verification passed
+Verified turns: 3000 / 3000
+Final verified output failures: 0
+Replay reduction ratio estimate: 192.79x
+```
+
+### Terminal
+
 ```powershell
 python run.py
 python verify.py results\latest
@@ -45,6 +65,7 @@ Expected files:
 - `metrics.json` - recall, token accounting, replay reduction, and run scope
 - `manifest.json` - file sizes and SHA256 receipts
 - `VERIFY.txt` - human-readable verification summary
+- `RESULT_SUMMARY.txt` - plain-language result summary
 - `prompt.md` - prompt for ChatGPT, Codex, Claude, Gemini, or another AI reviewer
 
 ## What It Proves
@@ -85,8 +106,14 @@ Never commit:
 The Launchable should do three things:
 
 1. Clone this repo.
-2. Run `python3 run.py`.
-3. Show the generated `results/latest` package and `prompt.md`.
+2. Open `START_HERE.ipynb`.
+3. Let the reviewer click **Run All**.
+
+If startup commands are supported, use:
+
+```bash
+bash launch.sh
+```
 
 Reviewers should be able to increase turns, fields, and episodes later:
 

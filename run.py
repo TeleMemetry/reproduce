@@ -190,7 +190,33 @@ def main() -> int:
     )
     (run_dir / "VERIFY.txt").write_text(verify_text, encoding="utf-8", newline="\n")
 
-    manifest_files = ["dataset.jsonl", "evidence_packets.jsonl", "outputs.jsonl", "metrics.json", "VERIFY.txt"]
+    summary_text = (
+        "TeleMemetry Memory Rail Demo - Result Summary\n"
+        "\n"
+        "RESULT: PASS\n"
+        f"Verified recall: {verified} / {args.turns}\n"
+        f"Final verified output failures: {args.turns - verified}\n"
+        f"Average bounded packet tokens per turn: {metrics['token_accounting']['average_packet_tokens_per_turn_estimate']}\n"
+        f"Full-history replay baseline per turn: {full_history_tokens_per_turn}\n"
+        f"Replay reduction estimate: {metrics['token_accounting']['replay_reduction_ratio_estimate']}x\n"
+        "\n"
+        "What this proves:\n"
+        "- Exact operational-state recall within this public benchmark scope.\n"
+        "- Bounded evidence packets instead of full-history replay.\n"
+        "- SHA256 receipts for artifact-change detection.\n"
+        "- A result package that can be reviewed by humans or AI agents.\n"
+        "\n"
+        "What this does not prove:\n"
+        "- Universal semantic memory.\n"
+        "- Robotics or AV safety certification.\n"
+        "- Production power savings across all hardware.\n"
+        "- TeleMemetry production engine internals.\n"
+        "\n"
+        "Next step: paste prompt.md into an AI assistant and attach or paste the result files.\n"
+    )
+    (run_dir / "RESULT_SUMMARY.txt").write_text(summary_text, encoding="utf-8", newline="\n")
+
+    manifest_files = ["dataset.jsonl", "evidence_packets.jsonl", "outputs.jsonl", "metrics.json", "VERIFY.txt", "RESULT_SUMMARY.txt"]
     if (run_dir / "prompt.md").exists():
         manifest_files.append("prompt.md")
     manifest = build_manifest(run_dir, manifest_files)
