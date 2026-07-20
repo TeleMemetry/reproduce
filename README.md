@@ -12,7 +12,41 @@ This repo is intentionally small. It does not contain TeleMemetry production eng
 
 ## Quick Start
 
-### NVIDIA Brev
+### NVIDIA Brev Web Demo
+
+Recommended Launchable setup:
+
+- Source repo: `https://github.com/TeleMemetry/reproduce`
+- Network secure link: `memory-demo` on port `7860`
+- Optional startup command: `bash web_demo.sh`
+
+User path:
+
+1. Open the Launchable.
+2. Open the `memory-demo` secure link.
+3. Click **Run Demo**.
+4. Read the result cards.
+
+Why: this avoids terminal and notebook navigation. The browser UI runs the benchmark, verifies the package, and links to the result summary, AI audit prompt, metrics, and SHA256 manifest.
+
+If the startup command is not available, open a terminal and run:
+
+```bash
+bash web_demo.sh
+```
+
+Then open the `memory-demo` secure link.
+
+Expected result:
+
+```text
+3000 / 3000 verified recall
+0 final failures
+52.96 average bounded packet tokens per turn
+192.79x replay reduction
+```
+
+### NVIDIA Brev Notebook Fallback
 
 1. Open the Launchable.
 2. Click **Open Notebook**.
