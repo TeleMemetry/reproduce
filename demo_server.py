@@ -98,6 +98,14 @@ HTML = """<!doctype html>
       margin-right: 8px;
     }
 
+    .scope-note {
+      max-width: 850px;
+      margin: -6px 0 24px;
+      color: var(--ink);
+      font-size: 18px;
+      font-weight: 850;
+    }
+
     .controls,
     .result,
     .log,
@@ -317,6 +325,7 @@ HTML = """<!doctype html>
     <li>Every answer is backed by verifiable evidence and SHA256 receipts, available in the result links below after the run.</li>
     <li>First launch may take a few minutes while Brev provisions the instance and starts this demo server. Let it finish; once this page is open, the benchmark itself is local and lightweight.</li>
   </ul>
+  <p class="scope-note">This is a public reproduction harness, not the private production engine. It mathematically verifies this measurement workflow and proves the artifact trail.</p>
 
   <section class="controls" aria-label="Benchmark controls">
     <label>Turns <input id="turns" type="number" min="1" max="10000" value="3000"></label>
@@ -352,6 +361,9 @@ HTML = """<!doctype html>
     <a href="/file/results/latest/prompt.md" target="_blank">Open AI Audit Prompt ↗</a>
     <a href="/file/results/latest/metrics.json" target="_blank">Open Metrics ↗</a>
     <a href="/file/results/latest/manifest.json" target="_blank">Open SHA256 Manifest ↗</a>
+    <a href="/file/results/latest/dataset.jsonl" target="_blank">Open Raw Telemetry In ↗</a>
+    <a href="/file/results/latest/evidence_packets.jsonl" target="_blank">Open Evidence Packets ↗</a>
+    <a href="/file/results/latest/outputs.jsonl" target="_blank">Open Verified Outputs ↗</a>
   </section>
 
   <pre class="log" id="log"></pre>
