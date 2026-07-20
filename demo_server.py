@@ -12,6 +12,12 @@ from urllib.parse import urlparse
 
 
 ROOT = Path(__file__).resolve().parent
+MAX_TURNS = 10_000
+MAX_FIELDS = 10
+MAX_EPISODES = 100
+
+
+FAVICON_SVG = """<svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg"><rect width="256" height="256" rx="44" fill="#f4f3ef"/><g fill="none" stroke="#13233a" stroke-width="14" stroke-linejoin="round"><rect x="42" y="42" width="108" height="108" rx="8"/><rect x="106" y="106" width="108" height="108" rx="8"/></g></svg>"""
 
 
 HTML = """<!doctype html>
@@ -20,6 +26,7 @@ HTML = """<!doctype html>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>TeleMemetry Memory Rail Demo</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <style>
     :root {
       --bg: #f4f3ef;
@@ -71,23 +78,24 @@ HTML = """<!doctype html>
       letter-spacing: -.02em;
     }
 
-    .lede {
+    .demo-points {
+      display: grid;
+      gap: 8px;
       max-width: 850px;
-      margin: 0 0 28px;
-      color: var(--muted);
-      font-size: 23px;
-      font-weight: 600;
-    }
-
-    .launch-note {
-      max-width: 850px;
-      margin: -8px 0 24px;
-      border-left: 4px solid var(--teal);
+      margin: 0 0 24px;
       background: rgba(56, 125, 131, .08);
-      padding: 13px 15px;
+      padding: 16px 18px;
       color: #38424b;
       font-size: 17px;
       font-weight: 700;
+      list-style: none;
+    }
+
+    .demo-points li::before {
+      content: "•";
+      color: var(--teal);
+      font-weight: 950;
+      margin-right: 8px;
     }
 
     .controls,
@@ -127,6 +135,22 @@ HTML = """<!doctype html>
       font: 800 22px/1.1 inherit;
     }
 
+    .limits {
+      margin: -4px 0 18px;
+      color: var(--muted);
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .limits strong {
+      color: var(--ink);
+    }
+
+    .limits a {
+      color: var(--teal);
+      font-weight: 900;
+    }
+
     button {
       min-height: 52px;
       border: 0;
@@ -157,6 +181,21 @@ HTML = """<!doctype html>
       margin-bottom: 18px;
     }
 
+    .progress-bar {
+      height: 12px;
+      margin: -4px 0 18px;
+      overflow: hidden;
+      border: 1px solid rgba(56, 125, 131, .22);
+      background: rgba(255, 255, 255, .72);
+    }
+
+    .progress-fill {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, var(--teal), var(--green));
+      transition: width .45s ease;
+    }
+
     .step {
       border: 1px solid var(--line);
       background: rgba(255, 255, 255, .7);
@@ -173,17 +212,32 @@ HTML = """<!doctype html>
 
     .result {
       display: none;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+      padding: 22px;
       margin-bottom: 18px;
     }
 
-    .metric {
-      min-height: 126px;
-      padding: 22px;
-      border-right: 1px solid var(--line);
+    .result-copy {
+      max-width: 900px;
+      margin: 0;
+      color: var(--ink);
+      font-size: 22px;
+      font-weight: 750;
     }
 
-    .metric:last-child { border-right: 0; }
+    .result-metrics {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 1px;
+      background: var(--line);
+      border: 1px solid var(--line);
+    }
+
+    .metric {
+      min-height: 108px;
+      padding: 18px;
+      background: #fff;
+    }
 
     .value {
       display: block;
@@ -214,9 +268,22 @@ HTML = """<!doctype html>
 
     .files a {
       display: inline-flex;
+      align-items: center;
+      gap: 7px;
       margin: 6px 12px 6px 0;
+      border: 1px solid rgba(56, 125, 131, .35);
+      background: #fff;
       color: var(--teal);
-      font-weight: 850;
+      padding: 10px 13px;
+      font-size: 15px;
+      font-weight: 900;
+      text-decoration: none;
+    }
+
+    .files a:hover {
+      border-color: var(--teal);
+      background: rgba(56, 125, 131, .08);
+      text-decoration: none;
     }
 
     .log {
@@ -232,13 +299,8 @@ HTML = """<!doctype html>
     @media (max-width: 820px) {
       .controls,
       .progress,
-      .result {
+      .result-metrics {
         grid-template-columns: 1fr;
-      }
-
-      .metric {
-        border-right: 0;
-        border-bottom: 1px solid var(--line);
       }
     }
   </style>
@@ -250,17 +312,21 @@ HTML = """<!doctype html>
     TeleMemetry&trade;
   </div>
   <h1>Memory Rail Demo</h1>
-  <p class="lede">Run a public verified-recall benchmark, generate bounded evidence packets, write SHA256 receipts, and produce an AI-auditable result package.</p>
-  <p class="launch-note">First launch may take a few minutes while Brev provisions the instance and starts this demo server. Let it finish; once this page is open, the benchmark itself is local and lightweight.</p>
+  <ul class="demo-points">
+    <li>Run a public verified-recall benchmark with bounded evidence packets, SHA256 receipts, and AI-auditable results.</li>
+    <li>First launch may take a few minutes while Brev provisions the instance and starts this demo server. Let it finish; once this page is open, the benchmark itself is local and lightweight.</li>
+  </ul>
 
   <section class="controls" aria-label="Benchmark controls">
-    <label>Turns <input id="turns" type="number" min="1" max="100000" value="3000"></label>
+    <label>Turns <input id="turns" type="number" min="1" max="10000" value="3000"></label>
     <label>Fields <input id="fields" type="number" min="1" max="10" value="10"></label>
-    <label>Episodes <input id="episodes" type="number" min="1" max="1000" value="20"></label>
+    <label>Episodes <input id="episodes" type="number" min="1" max="100" value="20"></label>
     <button id="run">Run Demo</button>
   </section>
+  <p class="limits"><strong>Public demo limits:</strong> up to 10,000 turns, 10 fields, and 100 episodes. These caps keep browser response, result files, and Brev instance time predictable. Need a bigger or domain-specific run? <a href="https://telememetry.com/reproduce.html" target="_blank" rel="noopener">Request a custom benchmark</a>.</p>
 
   <p class="status" id="status">Ready. Recommended first run: 3,000 turns, 10 fields, 20 episodes.</p>
+  <div class="progress-bar" aria-label="Benchmark progress"><div class="progress-fill" id="progress-fill"></div></div>
 
   <section class="progress" aria-label="Progress">
     <div class="step" id="step-generate">Generate evidence packets</div>
@@ -270,18 +336,21 @@ HTML = """<!doctype html>
   </section>
 
   <section class="result" id="result" aria-label="Benchmark result">
-    <div class="metric"><span class="value" id="verified">-</span><span class="label">Verified Recall</span></div>
-    <div class="metric"><span class="value" id="failures">-</span><span class="label">Final Failures</span></div>
-    <div class="metric"><span class="value" id="tokens">-</span><span class="label">Tokens / Turn</span></div>
-    <div class="metric"><span class="value" id="reduction">-</span><span class="label">Replay Reduction</span></div>
+    <p class="result-copy" id="result-copy"></p>
+    <div class="result-metrics">
+      <div class="metric"><span class="value" id="verified">-</span><span class="label">Verified Recall</span></div>
+      <div class="metric"><span class="value" id="failures">-</span><span class="label">Final Failures</span></div>
+      <div class="metric"><span class="value" id="tokens">-</span><span class="label">Tokens / Turn</span></div>
+      <div class="metric"><span class="value" id="reduction">-</span><span class="label">Replay Reduction</span></div>
+    </div>
   </section>
 
   <section class="files" id="files" aria-label="Result files">
     <h2>Result Package</h2>
-    <a href="/file/results/latest/RESULT_SUMMARY.txt" target="_blank">Open Result Summary</a>
-    <a href="/file/results/latest/prompt.md" target="_blank">Open AI Audit Prompt</a>
-    <a href="/file/results/latest/metrics.json" target="_blank">Open Metrics</a>
-    <a href="/file/results/latest/manifest.json" target="_blank">Open SHA256 Manifest</a>
+    <a href="/file/results/latest/RESULT_SUMMARY.txt" target="_blank">Open Result Summary ↗</a>
+    <a href="/file/results/latest/prompt.md" target="_blank">Open AI Audit Prompt ↗</a>
+    <a href="/file/results/latest/metrics.json" target="_blank">Open Metrics ↗</a>
+    <a href="/file/results/latest/manifest.json" target="_blank">Open SHA256 Manifest ↗</a>
   </section>
 
   <pre class="log" id="log"></pre>
@@ -292,6 +361,7 @@ HTML = """<!doctype html>
   var logEl = document.getElementById('log');
   var resultEl = document.getElementById('result');
   var filesEl = document.getElementById('files');
+  var progressFill = document.getElementById('progress-fill');
   var steps = ['generate', 'verify', 'hash', 'package'].map(function (id) {
     return document.getElementById('step-' + id);
   });
@@ -309,11 +379,15 @@ HTML = """<!doctype html>
     filesEl.style.display = 'none';
     logEl.style.display = 'none';
     logEl.textContent = '';
+    progressFill.style.width = '0%';
   }
 
   function beginSteps() {
     steps.forEach(function (step, index) {
-      setTimeout(function () { step.classList.add('done'); }, (index + 1) * progressDelayMs);
+      setTimeout(function () {
+        step.classList.add('done');
+        progressFill.style.width = ((index + 1) * 25) + '%';
+      }, (index + 1) * progressDelayMs);
     });
   }
 
@@ -353,6 +427,7 @@ HTML = """<!doctype html>
       document.getElementById('failures').textContent = metrics.recall.final_verified_output_failures;
       document.getElementById('tokens').textContent = metrics.token_accounting.average_packet_tokens_per_turn_estimate;
       document.getElementById('reduction').textContent = metrics.token_accounting.replay_reduction_ratio_estimate + 'x';
+      document.getElementById('result-copy').textContent = 'PASS: this run verified ' + metrics.recall.verified_turns + ' of ' + metrics.recall.total_turns + ' turns with ' + metrics.recall.final_verified_output_failures + ' final failures, averaging ' + metrics.token_accounting.average_packet_tokens_per_turn_estimate + ' bounded packet tokens per turn and reporting a ' + metrics.token_accounting.replay_reduction_ratio_estimate + 'x replay reduction estimate.';
       statusEl.textContent = 'PASS. Result package is ready in results/latest.';
       resultEl.style.display = 'grid';
       filesEl.style.display = 'block';
@@ -388,6 +463,9 @@ class DemoHandler(BaseHTTPRequestHandler):
         if parsed.path == "/":
             self.send_bytes(200, HTML.encode("utf-8"), "text/html; charset=utf-8")
             return
+        if parsed.path == "/favicon.svg":
+            self.send_bytes(200, FAVICON_SVG.encode("utf-8"), "image/svg+xml; charset=utf-8")
+            return
         if parsed.path.startswith("/file/"):
             rel = parsed.path.removeprefix("/file/")
             target = (ROOT / rel).resolve()
@@ -412,8 +490,11 @@ class DemoHandler(BaseHTTPRequestHandler):
         fields = int(payload.get("fields", 10))
         episodes = int(payload.get("episodes", 20))
 
-        if turns < 1 or fields < 1 or fields > 10 or episodes < 1:
-            self.send_json(400, {"ok": False, "error": "invalid benchmark parameters"})
+        if turns < 1 or turns > MAX_TURNS or fields < 1 or fields > MAX_FIELDS or episodes < 1 or episodes > MAX_EPISODES:
+            self.send_json(400, {
+                "ok": False,
+                "error": f"public demo limits are {MAX_TURNS} turns, {MAX_FIELDS} fields, and {MAX_EPISODES} episodes",
+            })
             return
 
         run_cmd = [sys.executable, "run.py", "--turns", str(turns), "--fields", str(fields), "--episodes", str(episodes)]
