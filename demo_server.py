@@ -25,7 +25,7 @@ HTML = """<!doctype html>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>TeleMemetry Memory Rail Demo</title>
+  <title>Launch TeleMemetry</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <style>
     :root {
@@ -311,9 +311,10 @@ HTML = """<!doctype html>
     <svg width="256" height="256" viewBox="0 0 256 256" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke="currentColor" stroke-width="14" stroke-linejoin="round"><rect x="42" y="42" width="108" height="108" rx="8"/><rect x="106" y="106" width="108" height="108" rx="8"/></g></svg>
     TeleMemetry&trade;
   </div>
-  <h1>Memory Rail Demo</h1>
+  <h1>Launch TeleMemetry&trade;</h1>
   <ul class="demo-points">
-    <li>Run a public verified-recall benchmark with bounded evidence packets, SHA256 receipts, and AI-auditable results.</li>
+    <li>Watch thousands of operational recall events become instantly queryable without replaying conversation history.</li>
+    <li>Every answer is backed by verifiable evidence and SHA256 receipts, available in the result links below after the run.</li>
     <li>First launch may take a few minutes while Brev provisions the instance and starts this demo server. Let it finish; once this page is open, the benchmark itself is local and lightweight.</li>
   </ul>
 
@@ -521,7 +522,7 @@ class DemoHandler(BaseHTTPRequestHandler):
 
 def main() -> int:
     server = ThreadingHTTPServer(("0.0.0.0", 7860), DemoHandler)
-    print("TeleMemetry Memory Rail Demo")
+    print("Launch TeleMemetry")
     print("Open: http://127.0.0.1:7860")
     server.serve_forever()
     return 0
