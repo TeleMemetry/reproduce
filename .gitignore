@@ -216,3 +216,23 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# TeleMemetry public reproduce outputs
+results/
+artifacts/
+*.tgz
+*.tar.gz
+*.zip
+
+# Credentials and local launch state
+*.pem
+*.key
+*.token
+*credential*
+*credentials*
+*secret*
+*secrets*
+*_auth.json
+local.config.json
+brev.local.json
+nvidia.local.json

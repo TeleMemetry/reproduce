@@ -1,0 +1,7 @@
+{
+  "turns": 3000,
+  "fields": 10,
+  "episodes": 20,
+  "credentials_required": false,
+  "claim_boundary": "Scoped deterministic public benchmark; not production engine internals."
+}

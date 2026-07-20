@@ -1,2 +1,103 @@
-# reproduce
-One-click TeleMemetry reproduction kit for NVIDIA Brev: run a scoped verified-recall benchmark, generate SHA256 receipts, and inspect bounded evidence packets without exposing production internals.
+# TeleMemetry Reproduce
+
+Public reproduction kit for scoped TeleMemetry-style verified recall benchmarks.
+
+This repo is intentionally small. It does not contain TeleMemetry production engine internals, private telemetry, credentials, model weights, or customer data. It gives reviewers a safe way to generate a deterministic result package and verify the five public mechanics:
+
+1. Exact recall correctness
+2. Bounded evidence packets
+3. Full-history replay avoidance accounting
+4. SHA256 artifact receipts
+5. Reproducible result packages for independent AI review
+
+## Quick Start
+
+```powershell
+python run.py
+python verify.py results\latest
+```
+
+On Linux or NVIDIA Brev:
+
+```bash
+python3 run.py
+python3 verify.py results/latest
+```
+
+The default run uses:
+
+- 3,000 turns
+- 10 structured fields
+- 20 episodes
+- deterministic public telemetry
+- no external dependencies
+- no credentials
+
+## What It Produces
+
+Each run writes a timestamped folder under `results/` and updates `results/latest`.
+
+Expected files:
+
+- `dataset.jsonl` - deterministic source telemetry records
+- `evidence_packets.jsonl` - bounded packets delivered per turn
+- `outputs.jsonl` - final verified outputs
+- `metrics.json` - recall, token accounting, replay reduction, and run scope
+- `manifest.json` - file sizes and SHA256 receipts
+- `VERIFY.txt` - human-readable verification summary
+- `prompt.md` - prompt for ChatGPT, Codex, Claude, Gemini, or another AI reviewer
+
+## What It Proves
+
+This kit proves that, within this public benchmark scope, a reviewer can:
+
+- Recreate a deterministic telemetry dataset.
+- Query one bounded evidence packet per turn.
+- Verify every returned value against the stored reference value.
+- Compare bounded packet tokens against a full-history replay baseline.
+- Detect artifact changes with SHA256 receipts.
+
+## What It Does Not Prove
+
+This repo does not prove universal memory, chatbot memory, semantic reasoning quality, production robotics safety, AV certification, or power savings across all hardware.
+
+It is a scoped reproduction path for operational-state recall mechanics.
+
+## Credentials
+
+Do not commit credentials.
+
+This repo does not need TeleMemetry credentials. If a hosted Launchable later needs cloud credentials, enter them only into the cloud provider's secret manager or environment variable UI.
+
+Never commit:
+
+- `.env`
+- API keys
+- cloud tokens
+- SSH keys
+- session cookies
+- private telemetry
+- production configs
+- generated result packages containing secrets
+
+## NVIDIA Brev Launchable Target
+
+The Launchable should do three things:
+
+1. Clone this repo.
+2. Run `python3 run.py`.
+3. Show the generated `results/latest` package and `prompt.md`.
+
+Reviewers should be able to increase turns, fields, and episodes later:
+
+```bash
+python3 run.py --turns 10000 --fields 10 --episodes 20
+```
+
+## AI Review
+
+After running the benchmark, paste `results/latest/prompt.md` into an AI assistant and attach or paste the generated result files. The prompt asks the AI to inspect the metrics, receipts, scope, and supported claims.
+
+## License
+
+No license is granted yet. Public visibility allows review under GitHub terms, but reuse rights are intentionally not granted until the IP boundary is finalized.
