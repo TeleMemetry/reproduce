@@ -375,6 +375,39 @@ HTML = """<!doctype html>
   });
   var progressDelayMs = 2000;
   var minimumRunMs = 10000;
+  var numericLimits = {
+    turns: { min: 1, max: 10000 },
+    fields: { min: 1, max: 10 },
+    episodes: { min: 1, max: 100 }
+  };
+
+  function clampNumber(id) {
+    var input = document.getElementById(id);
+    var limits = numericLimits[id];
+    var value = Number(input.value);
+    if (!Number.isFinite(value)) {
+      value = Number(input.defaultValue);
+    }
+    value = Math.round(value);
+    value = Math.max(limits.min, Math.min(limits.max, value));
+    input.value = value;
+    return value;
+  }
+
+  Object.keys(numericLimits).forEach(function (id) {
+    var input = document.getElementById(id);
+    input.addEventListener('input', function () {
+      if (Number(input.value) > numericLimits[id].max) {
+        input.value = numericLimits[id].max;
+      }
+      if (Number(input.value) < numericLimits[id].min && input.value !== '') {
+        input.value = numericLimits[id].min;
+      }
+    });
+    input.addEventListener('change', function () {
+      clampNumber(id);
+    });
+  });
 
   function setRunning(running) {
     runButton.disabled = running;
@@ -418,9 +451,9 @@ HTML = """<!doctype html>
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        turns: Number(document.getElementById('turns').value),
-        fields: Number(document.getElementById('fields').value),
-        episodes: Number(document.getElementById('episodes').value)
+        turns: clampNumber('turns'),
+        fields: clampNumber('fields'),
+        episodes: clampNumber('episodes')
       })
     }).then(function (response) {
       return response.json();
