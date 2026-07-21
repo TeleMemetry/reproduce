@@ -227,6 +227,8 @@ def main() -> int:
         "RESULT: PASS\n"
         f"Launchable version: {metrics['launchable']['version']}\n"
         f"Source commit: {metrics['launchable']['source_commit']}\n"
+        "Package stage: post-run verification and packaging of completed benchmark artifacts\n"
+        "Replay status: original benchmark execution is not replayed during this verification step\n"
         "\n"
         "Verification\n"
         f"Verified recall: {verified} / {args.turns}\n"

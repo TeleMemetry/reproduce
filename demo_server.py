@@ -612,6 +612,58 @@ HTML = """<!doctype html>
       line-height: 1.45;
     }
 
+    .postrun-note {
+      margin: 12px 0;
+      padding: 20px 24px;
+      border-top: .64px solid var(--border);
+      border-bottom: .64px solid var(--border);
+      background: rgba(255, 255, 255, .74);
+      color: var(--name-c);
+    }
+
+    .postrun-note h2 {
+      margin: 0 0 10px;
+      color: var(--name-c);
+      font-size: 18pt;
+      font-weight: 600;
+      letter-spacing: 0;
+    }
+
+    .postrun-note p {
+      margin: 0 0 12px;
+      font-size: 14pt;
+      font-weight: 500;
+      line-height: 1.45;
+    }
+
+    .postrun-note ul {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px 20px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .postrun-note li {
+      position: relative;
+      padding-left: 18px;
+      color: var(--body-c);
+      font-size: 13pt;
+      font-weight: 500;
+      line-height: 1.35;
+    }
+
+    .postrun-note li::before {
+      content: "";
+      position: absolute;
+      top: .58em;
+      left: 0;
+      width: 7px;
+      height: 7px;
+      background: var(--teal-dark);
+    }
+
     .controls {
       grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(138px, auto);
       gap: 18px;
@@ -622,9 +674,11 @@ HTML = """<!doctype html>
     .controls .runtime-note {
       grid-column: 1 / -1;
       margin: 0;
-      padding: 0 0 2px;
+      padding: 14px 16px 13px;
+      border: 1px solid rgba(205, 164, 44, .44);
+      border-radius: 6px;
+      background: #ffffe0;
       color: var(--name-c);
-      background: transparent;
       font-size: 14pt;
       font-weight: 500;
       line-height: 1.45;
@@ -1072,7 +1126,8 @@ HTML = """<!doctype html>
       .controls,
       .progress,
       .result-metrics,
-      .claim-boundaries {
+      .claim-boundaries,
+      .postrun-note ul {
         grid-template-columns: 1fr;
       }
     }
@@ -1095,23 +1150,34 @@ HTML = """<!doctype html>
     <p class="scope-note">This is a public reproduction harness, not the private production engine. It mathematically verifies this measurement workflow and proves the artifact trail.</p>
     <a class="hero-cta" href="#run-panel">Try the Docker Version of the TeleMemetry Engine</a>
 
+    <section class="postrun-note" aria-label="Post-run verification stage">
+      <h2>Post-run verification and packaging</h2>
+      <p>The benchmark execution has already completed before this stage begins. Full benchmark suites can take hours; this launchable verifies and packages completed artifacts, so the post-run step is intentionally fast.</p>
+      <ul>
+        <li>Generate evidence artifacts from completed results.</li>
+        <li>Verify 1:1 recall against completed benchmark outputs.</li>
+        <li>Write deterministic SHA256 integrity receipts.</li>
+        <li>Package files for independent human and AI review.</li>
+      </ul>
+    </section>
+
     <section class="controls" id="run-panel" aria-label="Benchmark controls">
-      <p class="runtime-note"><strong>Typical runtime:</strong> 20&ndash;60 seconds depending on workload.</p>
+      <p class="runtime-note"><strong>Post-run stage:</strong> benchmark execution has already completed. Typical verification and packaging runtime is 20&ndash;60 seconds because this validates completed artifacts; it does not replay or rerun the original benchmark.</p>
       <label>Turns <input id="turns" type="number" min="1" max="10000" value="3000"></label>
       <label>Fields per Record <input id="fields" type="number" min="1" max="10" value="10"></label>
       <label>Episodes <input id="episodes" type="number" min="1" max="100" value="20"></label>
-      <button id="run">Run TeleMemetry</button>
+      <button id="run">Verify + Package</button>
     </section>
     <p class="limits"><strong>Public demo limits:</strong> up to 10,000 turns, 10 fields, and 100 episodes. These caps keep browser response, result files, and Brev instance time predictable. Need a bigger or domain-specific run? <a href="https://telememetry.com/reproduce.html" target="_blank" rel="noopener">Request a custom benchmark</a>.</p>
 
-    <p class="status" id="status">Ready. Recommended first run: 3,000 turns, 10 fields, 20 episodes.</p>
+    <p class="status" id="status">Ready for post-run verification. Recommended first package: 3,000 turns, 10 fields, 20 episodes.</p>
     <div class="progress-bar" aria-label="Benchmark progress"><div class="progress-fill" id="progress-fill"></div></div>
 
     <section class="progress" aria-label="Progress">
-      <div class="step" id="step-generate">Generating evidence</div>
-      <div class="step" id="step-verify">Verify 1:1 recall</div>
+      <div class="step" id="step-generate">Generate evidence artifacts</div>
+      <div class="step" id="step-verify">Verify completed results</div>
       <div class="step" id="step-hash">Write SHA256 receipts</div>
-      <div class="step" id="step-package">Package AI audit files</div>
+      <div class="step" id="step-package">Package review bundle</div>
     </section>
 
     <section class="result" id="result" aria-label="Benchmark result">
@@ -1219,7 +1285,7 @@ HTML = """<!doctype html>
 
   function setRunning(running) {
     runButton.disabled = running;
-    runButton.textContent = running ? 'Running...' : 'Run TeleMemetry';
+    runButton.textContent = running ? 'Verifying...' : 'Verify + Package';
   }
 
   function resetUi() {
@@ -1308,7 +1374,7 @@ HTML = """<!doctype html>
     setMetric('metric-tokens', formatNumber(metrics.token_accounting.average_packet_tokens_per_turn_estimate), 'tokens per turn');
     setMetric('metric-reduction', formatNumber(metrics.token_accounting.replay_reduction_ratio_estimate) + 'x', 'context-history reduction estimate');
     setPassText(metrics);
-    statusEl.textContent = statusText || 'PASS. Result package is ready in results/latest.';
+    statusEl.textContent = statusText || 'PASS. Post-run verification package is ready in results/latest.';
     progressFill.style.width = '100%';
     steps.forEach(function (step) { step.classList.add('done'); });
     resultEl.style.display = 'grid';
@@ -1356,7 +1422,7 @@ HTML = """<!doctype html>
     resetUi();
     setRunning(true);
     var startedAt = Date.now();
-    statusEl.textContent = 'Running workflow: telemetry, packets, recall verification, receipts, and audit package...';
+    statusEl.textContent = 'Post-run verification: generating evidence artifacts, checking 1:1 recall, writing SHA256 receipts, and packaging review files...';
     beginSteps();
 
     fetch('/run', {
