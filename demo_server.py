@@ -6,6 +6,8 @@ from __future__ import annotations
 import json
 import subprocess
 import sys
+import tarfile
+from io import BytesIO
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse
@@ -1142,6 +1144,7 @@ HTML = """<!doctype html>
       <a href="/file/results/latest/dataset.jsonl" target="_blank">Open Raw Telemetry In ↗</a>
       <a href="/file/results/latest/evidence_packets.jsonl" target="_blank">Open Evidence Packets ↗</a>
       <a href="/file/results/latest/outputs.jsonl" target="_blank">Open Verified Outputs ↗</a>
+      <a href="/bundle/latest.tar.gz" download>Download Evidence Bundle (.tar.gz) ↗</a>
     </section>
 
     <section class="log-wrap" id="log-wrap" aria-label="Output terminal">
@@ -1388,6 +1391,14 @@ class DemoHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def send_download(self, body: bytes, content_type: str, filename: str) -> None:
+        self.send_response(200)
+        self.send_header("Content-Type", content_type)
+        self.send_header("Content-Disposition", f'attachment; filename="{filename}"')
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
     def send_json(self, status: int, obj: dict) -> None:
         self.send_bytes(status, json.dumps(obj, indent=2).encode("utf-8"), "application/json; charset=utf-8")
 
@@ -1415,6 +1426,22 @@ class DemoHandler(BaseHTTPRequestHandler):
                 "summary": summary,
                 "output": output,
             })
+            return
+        if parsed.path == "/bundle/latest.tar.gz":
+            bundle_dir = (ROOT / "results/latest").resolve()
+            if not str(bundle_dir).startswith(str(ROOT)) or not bundle_dir.exists() or not bundle_dir.is_dir():
+                self.send_json(404, {"ok": False, "error": "latest result package not found"})
+                return
+            buffer = BytesIO()
+            with tarfile.open(fileobj=buffer, mode="w:gz") as tar:
+                for path in sorted(bundle_dir.rglob("*")):
+                    if path.is_file():
+                        tar.add(path, arcname=str(Path("telememetry-evidence-bundle") / path.relative_to(bundle_dir)))
+            self.send_download(
+                buffer.getvalue(),
+                "application/gzip",
+                "telememetry-evidence-bundle-latest.tar.gz",
+            )
             return
         if parsed.path.startswith("/file/"):
             rel = parsed.path.removeprefix("/file/")
