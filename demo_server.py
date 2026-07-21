@@ -549,7 +549,7 @@ HTML = """<!doctype html>
       font-size: 18pt;
       font-weight: 600;
       line-height: 1.5;
-      text-align: left;
+      text-align: center;
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
     }
