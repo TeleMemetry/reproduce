@@ -1117,7 +1117,7 @@ HTML = """<!doctype html>
     <section class="result" id="result" aria-label="Benchmark result">
       <button class="copy-evidence" id="copy-evidence" type="button">Copy Benchmark Evidence for AI</button>
       <p class="result-copy" id="result-copy"></p>
-      <p class="result-why">Why this matters: a field appliance, robot, vehicle, or satellite can keep long operational history outside the model, then retrieve the exact state needed for the next decision without replaying the whole history into context.</p>
+      <p class="result-why">Benchmark relevance: a field appliance, robot, vehicle, or satellite can keep long operational history outside the model, then retrieve the exact state needed for the next decision without replaying the whole history into context.</p>
       <ul class="result-metrics">
         <li id="metric-responses" tabindex="0" data-tooltip="Bit-perfect responses are exact matches against stored telemetry state. Legacy context replay has to drag history forward; TeleMemetry retrieves the bounded proof needed for each answer.">-</li>
         <li id="metric-recall" tabindex="0" data-tooltip="1:1 recall means every checked answer matched the reference value. Compared with legacy long-context replay, this turns memory verification into a measurable pass or fail result.">-</li>
@@ -1126,15 +1126,15 @@ HTML = """<!doctype html>
       </ul>
       <div class="claim-boundaries" aria-label="Benchmark claim boundaries">
         <div class="claim-box">
-          <h3>What this proves</h3>
+          <h3>Benchmark scope</h3>
           <ul>
             <li>Exact operational-state recall inside this public benchmark scope.</li>
             <li>Bounded evidence packets instead of full-history replay.</li>
-            <li>SHA256 receipts for artifact-change detection.</li>
+            <li>SHA256 receipts for artifact integrity verification.</li>
           </ul>
         </div>
         <div class="claim-box">
-          <h3>What this does not prove</h3>
+          <h3>Limitations</h3>
           <ul>
             <li>Universal semantic memory or chatbot reasoning quality.</li>
             <li>Robotics, AV, or production safety certification.</li>
@@ -1315,7 +1315,7 @@ HTML = """<!doctype html>
     filesEl.style.display = 'block';
     logWrapEl.style.display = 'block';
     logEl.style.display = 'block';
-    logEl.textContent = (data.output || '') + (data.output ? '\\n\\n' : '') + (data.summary || '');
+    logEl.textContent = data.summary || data.output || '';
   }
 
   function loadLatestPreview() {
