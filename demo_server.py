@@ -1020,6 +1020,14 @@ HTML = """<!doctype html>
       transform: scale(1.045);
     }
 
+    .files a[href^="/bundle/"] {
+      background: #ffffe0;
+    }
+
+    .files a[href^="/bundle/"]:hover {
+      background: #fff9bd;
+    }
+
     .log-wrap {
       position: relative;
       display: none;
