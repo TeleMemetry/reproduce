@@ -1412,6 +1412,25 @@ class DemoHandler(BaseHTTPRequestHandler):
     def send_json(self, status: int, obj: dict) -> None:
         self.send_bytes(status, json.dumps(obj, indent=2).encode("utf-8"), "application/json; charset=utf-8")
 
+    def bundle_dir(self) -> Path:
+        return (ROOT / "results/latest").resolve()
+
+    def load_bundle_metrics(self, bundle_dir: Path) -> dict:
+        metrics_path = bundle_dir / "metrics.json"
+        if not metrics_path.exists():
+            return {}
+        return json.loads(metrics_path.read_text(encoding="utf-8"))
+
+    def bundle_filename(self, bundle_dir: Path, extension: str) -> str:
+        metrics = self.load_bundle_metrics(bundle_dir)
+        scope = metrics.get("scope", {})
+        launchable = metrics.get("launchable", {})
+        turns = scope.get("turns", "unknown-turns")
+        fields = scope.get("fields", "unknown-fields")
+        episodes = scope.get("episodes", "unknown-episodes")
+        version = launchable.get("version", "unknown")
+        return f"{turns}-{fields}-{episodes}-v{version}-telememetry-evidence-bundle.{extension}"
+
     def do_GET(self) -> None:
         parsed = urlparse(self.path)
         if parsed.path == "/":
@@ -1438,7 +1457,7 @@ class DemoHandler(BaseHTTPRequestHandler):
             })
             return
         if parsed.path == "/bundle/latest.tar.gz":
-            bundle_dir = (ROOT / "results/latest").resolve()
+            bundle_dir = self.bundle_dir()
             if not str(bundle_dir).startswith(str(ROOT)) or not bundle_dir.exists() or not bundle_dir.is_dir():
                 self.send_json(404, {"ok": False, "error": "latest result package not found"})
                 return
@@ -1450,11 +1469,11 @@ class DemoHandler(BaseHTTPRequestHandler):
             self.send_download(
                 buffer.getvalue(),
                 "application/gzip",
-                "telememetry-evidence-bundle-latest.tar.gz",
+                self.bundle_filename(bundle_dir, "tar.gz"),
             )
             return
         if parsed.path == "/bundle/latest.zip":
-            bundle_dir = (ROOT / "results/latest").resolve()
+            bundle_dir = self.bundle_dir()
             if not str(bundle_dir).startswith(str(ROOT)) or not bundle_dir.exists() or not bundle_dir.is_dir():
                 self.send_json(404, {"ok": False, "error": "latest result package not found"})
                 return
@@ -1466,7 +1485,7 @@ class DemoHandler(BaseHTTPRequestHandler):
             self.send_download(
                 buffer.getvalue(),
                 "application/zip",
-                "telememetry-evidence-bundle-latest.zip",
+                self.bundle_filename(bundle_dir, "zip"),
             )
             return
         if parsed.path.startswith("/file/"):

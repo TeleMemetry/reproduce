@@ -75,6 +75,11 @@ def main() -> int:
         require(actual == entry["sha256"], f"sha256 mismatch for {entry['path']}: {actual} != {entry['sha256']}")
 
     metrics = json.loads(metrics_path.read_text(encoding="utf-8"))
+    version_path = run_dir / "launchable_version.json"
+    if version_path.exists():
+        launchable_version = json.loads(version_path.read_text(encoding="utf-8"))
+        require(launchable_version == metrics.get("launchable"), "launchable_version.json does not match metrics.json")
+
     dataset = load_jsonl(dataset_path)
     evidence_packets = load_jsonl(evidence_path)
     outputs = load_jsonl(outputs_path)

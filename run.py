@@ -8,9 +8,12 @@ import hashlib
 import json
 import math
 import shutil
+import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
 
+
+LAUNCHABLE_VERSION = "2026.07.21.1"
 
 FIELD_NAMES = [
     "pose_x",
@@ -32,6 +35,19 @@ def sha256_text(text: str) -> str:
 
 def stable_json(obj: object) -> str:
     return json.dumps(obj, sort_keys=True, separators=(",", ":"))
+
+
+def source_commit() -> str:
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "--short=12", "HEAD"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    except Exception:
+        return "unknown"
+    return result.stdout.strip() or "unknown"
 
 
 def estimate_tokens(text: str) -> int:
@@ -149,6 +165,10 @@ def main() -> int:
     replay_reduction = total_replay_tokens / total_packet_tokens
     metrics = {
         "benchmark": "telememetry-public-reproduce",
+        "launchable": {
+            "version": LAUNCHABLE_VERSION,
+            "source_commit": source_commit(),
+        },
         "scope": {
             "turns": args.turns,
             "fields": len(fields),
@@ -176,6 +196,11 @@ def main() -> int:
     write_jsonl(run_dir / "evidence_packets.jsonl", evidence_packets)
     write_jsonl(run_dir / "outputs.jsonl", outputs)
     (run_dir / "metrics.json").write_text(json.dumps(metrics, indent=2) + "\n", encoding="utf-8", newline="\n")
+    (run_dir / "launchable_version.json").write_text(
+        json.dumps(metrics["launchable"], indent=2) + "\n",
+        encoding="utf-8",
+        newline="\n",
+    )
 
     prompt_template = Path("prompt.md")
     if prompt_template.exists():
@@ -186,6 +211,8 @@ def main() -> int:
 
     verify_text = (
         "TeleMemetry public reproduce verification\n"
+        f"Launchable version: {metrics['launchable']['version']}\n"
+        f"Source commit: {metrics['launchable']['source_commit']}\n"
         f"Verified turns: {verified} / {args.turns}\n"
         f"Final verified output failures: {args.turns - verified}\n"
         f"Average packet tokens per turn estimate: {metrics['token_accounting']['average_packet_tokens_per_turn_estimate']}\n"
@@ -197,6 +224,8 @@ def main() -> int:
         "TeleMemetry Memory Rail Demo - Result Summary\n"
         "\n"
         "RESULT: PASS\n"
+        f"Launchable version: {metrics['launchable']['version']}\n"
+        f"Source commit: {metrics['launchable']['source_commit']}\n"
         f"Verified recall: {verified} / {args.turns}\n"
         f"Final verified output failures: {args.turns - verified}\n"
         f"Average bounded packet tokens per turn: {metrics['token_accounting']['average_packet_tokens_per_turn_estimate']}\n"
@@ -220,7 +249,7 @@ def main() -> int:
     )
     (run_dir / "RESULT_SUMMARY.txt").write_text(summary_text, encoding="utf-8", newline="\n")
 
-    manifest_files = ["dataset.jsonl", "evidence_packets.jsonl", "outputs.jsonl", "metrics.json", "VERIFY.txt", "RESULT_SUMMARY.txt"]
+    manifest_files = ["dataset.jsonl", "evidence_packets.jsonl", "outputs.jsonl", "metrics.json", "launchable_version.json", "VERIFY.txt", "RESULT_SUMMARY.txt"]
     if (run_dir / "prompt.md").exists():
         manifest_files.append("prompt.md")
     if (run_dir / "AUDIT_PROMPT.md").exists():
