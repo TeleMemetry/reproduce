@@ -1086,7 +1086,7 @@ HTML = """<!doctype html>
   </div>
   <a class="launch-link" href="https://brev.nvidia.com/launchable/deploy?launchableID=env-3Gl3frrN9xLqxFk47kk8TMGE3kD" target="_blank" rel="noopener" aria-label="Open TeleMemetry Launchable on NVIDIA Brev">Share Launchable<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 17 17 7M9 7h8v8" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 4h6v6M20 4 10 14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" opacity=".45"/></svg></a>
   <h1><span class="brand-mark"><svg width="256" height="256" viewBox="0 0 256 256" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke="currentColor" stroke-width="14" stroke-linejoin="round"><rect x="42" y="42" width="108" height="108" rx="8"/><rect x="106" y="106" width="108" height="108" rx="8"/></g></svg>TeleMemetry&trade; Launchable for NVIDIA Brev</span></h1>
-  <p class="hero-subhead">This benchmark demonstrates bit-perfect operational recall over long-running telemetry - without replaying historical context.</p>
+  <p class="hero-subhead">This benchmark demonstrates bit-perfect operational recall over long-running telemetry.<br>Without replaying historical context.<br>No RAG. No pruning. No compression. No database required.</p>
   <section class="launch-panel" aria-label="Launchable benchmark">
     <ul class="demo-points">
       <li>Watch thousands of operational recall events become instantly queryable without replaying conversation history.</li>
