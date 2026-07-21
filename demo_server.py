@@ -7,6 +7,7 @@ import json
 import subprocess
 import sys
 import tarfile
+import zipfile
 from io import BytesIO
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -1137,14 +1138,15 @@ HTML = """<!doctype html>
 
     <section class="files" id="files" aria-label="Result files">
       <h2>TeleMemetry&trade; Result Packages</h2>
-      <a href="/file/results/latest/RESULT_SUMMARY.txt" target="_blank">Open Result Summary ↗</a>
-      <a href="/file/results/latest/prompt.md" target="_blank">Open AI Audit Prompt ↗</a>
-      <a href="/file/results/latest/metrics.json" target="_blank">Open Metrics ↗</a>
-      <a href="/file/results/latest/manifest.json" target="_blank">Open SHA256 Manifest ↗</a>
-      <a href="/file/results/latest/dataset.jsonl" target="_blank">Open Raw Telemetry In ↗</a>
-      <a href="/file/results/latest/evidence_packets.jsonl" target="_blank">Open Evidence Packets ↗</a>
-      <a href="/file/results/latest/outputs.jsonl" target="_blank">Open Verified Outputs ↗</a>
+      <a href="/file/results/latest/RESULT_SUMMARY.txt" target="_blank">View Result Summary ↗</a>
+      <a href="/file/results/latest/prompt.md" target="_blank">View AI Audit Prompt ↗</a>
+      <a href="/file/results/latest/metrics.json" target="_blank">View Metrics ↗</a>
+      <a href="/file/results/latest/manifest.json" target="_blank">View SHA256 Manifest ↗</a>
+      <a href="/file/results/latest/dataset.jsonl" target="_blank">View Raw Telemetry In ↗</a>
+      <a href="/file/results/latest/evidence_packets.jsonl" target="_blank">View Evidence Packets ↗</a>
+      <a href="/file/results/latest/outputs.jsonl" target="_blank">View Verified Outputs ↗</a>
       <a href="/bundle/latest.tar.gz" download>Download Evidence Bundle (.tar.gz) ↗</a>
+      <a href="/bundle/latest.zip" download>Download Evidence Bundle (.zip) ↗</a>
     </section>
 
     <section class="log-wrap" id="log-wrap" aria-label="Output terminal">
@@ -1441,6 +1443,22 @@ class DemoHandler(BaseHTTPRequestHandler):
                 buffer.getvalue(),
                 "application/gzip",
                 "telememetry-evidence-bundle-latest.tar.gz",
+            )
+            return
+        if parsed.path == "/bundle/latest.zip":
+            bundle_dir = (ROOT / "results/latest").resolve()
+            if not str(bundle_dir).startswith(str(ROOT)) or not bundle_dir.exists() or not bundle_dir.is_dir():
+                self.send_json(404, {"ok": False, "error": "latest result package not found"})
+                return
+            buffer = BytesIO()
+            with zipfile.ZipFile(buffer, mode="w", compression=zipfile.ZIP_DEFLATED) as zip_file:
+                for path in sorted(bundle_dir.rglob("*")):
+                    if path.is_file():
+                        zip_file.write(path, arcname=str(Path("telememetry-evidence-bundle") / path.relative_to(bundle_dir)))
+            self.send_download(
+                buffer.getvalue(),
+                "application/zip",
+                "telememetry-evidence-bundle-latest.zip",
             )
             return
         if parsed.path.startswith("/file/"):
