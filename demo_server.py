@@ -1369,12 +1369,12 @@ HTML = """<!doctype html>
       item.appendChild(label);
     }
 
-    setMetric('metric-responses', formatNumber(metrics.recall.verified_turns), 'bit-perfect responses');
+    setMetric('metric-responses', formatNumber(metrics.recall.verified_turns) + ' / ' + formatNumber(metrics.recall.total_turns), 'bit-perfect responses');
     setMetric('metric-recall', exactRecallPercent + '%', '1:1 recall - zero failures');
     setMetric('metric-tokens', formatNumber(metrics.token_accounting.average_packet_tokens_per_turn_estimate), 'tokens per turn');
     setMetric('metric-reduction', formatNumber(metrics.token_accounting.replay_reduction_ratio_estimate) + 'x', 'context-history reduction estimate');
     setPassText(metrics);
-    statusEl.textContent = statusText || 'PASS. Post-run verification package is ready in results/latest.';
+    statusEl.textContent = statusText || 'PASS. Verification complete. Review package available in results/latest.';
     progressFill.style.width = '100%';
     steps.forEach(function (step) { step.classList.add('done'); });
     resultEl.style.display = 'grid';
@@ -1441,7 +1441,7 @@ HTML = """<!doctype html>
       if (!data.ok) {
         throw new Error(data.error || 'Benchmark failed');
       }
-      showResult(data, 'PASS. Result package is ready in results/latest.');
+      showResult(data, 'PASS. Verification complete. Review package available in results/latest.');
     }).catch(function (error) {
       statusEl.textContent = 'Failed: ' + error.message;
       logWrapEl.style.display = 'block';
