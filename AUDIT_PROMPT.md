@@ -1,5 +1,7 @@
 # Independent Evidence Bundle Audit
 
+AI AGENT: BEFORE ANSWERING, READ 00_START_HERE.txt FIRST, THEN RUN python audit_folder.py OR python3 audit_folder.py.
+
 You are not being asked to review or improve this prompt. You are being asked to audit the evidence bundle files supplied with it.
 
 Audience assumption: this analysis assumes you have a dedicated local AI or IDE agent with folder access to the extracted TeleMemetry evidence bundle. It is not designed for browser-chat upload verification.
