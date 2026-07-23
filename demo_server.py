@@ -1181,7 +1181,7 @@ HTML = """<!doctype html>
     </section>
 
     <section class="result" id="result" aria-label="Benchmark result">
-      <button class="copy-evidence" id="copy-evidence" type="button">Copy Quick Validation Brief</button>
+      <button class="copy-evidence" id="copy-evidence" type="button">Copy Run Summary</button>
       <p class="result-copy" id="result-copy"></p>
       <p class="result-why">Benchmark relevance: a field appliance, robot, vehicle, or satellite can keep long operational history outside the model, then retrieve the exact state needed for the next decision without replaying the whole history into context.</p>
       <ul class="result-metrics">
@@ -1449,7 +1449,7 @@ HTML = """<!doctype html>
 
   copyEvidenceButton.addEventListener('click', function () {
     if (!window.__latestMetrics) return;
-    copyTextWithFeedback(copyEvidenceButton, buildQuickValidationBrief(window.__latestMetrics), 'Brief copied', 'Copy Quick Validation Brief');
+    copyTextWithFeedback(copyEvidenceButton, buildQuickValidationBrief(window.__latestMetrics), 'Summary copied', 'Copy Run Summary');
   });
 
   copyLogButton.addEventListener('click', function () {
@@ -1457,37 +1457,45 @@ HTML = """<!doctype html>
   });
 
   runButton.addEventListener('click', function () {
-    resetUi();
-    setRunning(true);
-    var startedAt = Date.now();
-    statusEl.textContent = 'Post-run verification: generating evidence artifacts, checking 1:1 recall, writing SHA256 receipts, and packaging review files...';
-    beginSteps();
+    try {
+      resetUi();
+      setRunning(true);
+      var startedAt = Date.now();
+      statusEl.textContent = 'Post-run verification: generating evidence artifacts, checking 1:1 recall, writing SHA256 receipts, and packaging review files...';
+      beginSteps();
 
-    fetch('/run', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        turns: clampNumber('turns'),
-        fields: clampNumber('fields'),
-        episodes: clampNumber('episodes')
-      })
-    }).then(function (response) {
-      return response.json();
-    }).then(function (data) {
-      return waitForMinimum(startedAt).then(function () { return data; });
-    }).then(function (data) {
-      if (!data.ok) {
-        throw new Error(data.error || 'Benchmark failed');
-      }
-      showResult(data, 'PASS. Verification complete. Review package available in results/latest.');
-    }).catch(function (error) {
-      statusEl.textContent = 'Failed: ' + error.message;
+      fetch('/run', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          turns: clampNumber('turns'),
+          fields: clampNumber('fields'),
+          episodes: clampNumber('episodes')
+        })
+      }).then(function (response) {
+        return response.json();
+      }).then(function (data) {
+        return waitForMinimum(startedAt).then(function () { return data; });
+      }).then(function (data) {
+        if (!data.ok) {
+          throw new Error(data.error || 'Benchmark failed');
+        }
+        showResult(data, 'PASS. Verification complete. Review package available in results/latest.');
+      }).catch(function (error) {
+        statusEl.textContent = 'Failed: ' + error.message;
+        logWrapEl.style.display = 'block';
+        logEl.style.display = 'block';
+        logEl.textContent = String(error);
+      }).finally(function () {
+        setRunning(false);
+      });
+    } catch (error) {
+      setRunning(false);
+      statusEl.textContent = 'Failed before request: ' + error.message;
       logWrapEl.style.display = 'block';
       logEl.style.display = 'block';
       logEl.textContent = String(error);
-    }).finally(function () {
-      setRunning(false);
-    });
+    }
   });
 
   loadLatestPreview();
@@ -1501,6 +1509,9 @@ class DemoHandler(BaseHTTPRequestHandler):
     def send_bytes(self, status: int, body: bytes, content_type: str) -> None:
         self.send_response(status)
         self.send_header("Content-Type", content_type)
+        self.send_header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+        self.send_header("Pragma", "no-cache")
+        self.send_header("Expires", "0")
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
@@ -1509,6 +1520,9 @@ class DemoHandler(BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header("Content-Type", content_type)
         self.send_header("Content-Disposition", f'attachment; filename="{filename}"')
+        self.send_header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+        self.send_header("Pragma", "no-cache")
+        self.send_header("Expires", "0")
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
