@@ -2,9 +2,17 @@
 
 You are not being asked to review or improve this prompt. You are being asked to audit the evidence bundle files supplied with it.
 
-Before starting, inspect the uploaded files supplied with this prompt. Many AI agents do not accept ZIP files. If ZIP upload is not supported, attach `AI_AUDIT_PACKET.md` or the individual files instead.
+Before starting, inspect the evidence files supplied with this prompt. The ideal workflow is to extract the evidence archive into a folder accessible by a local AI or IDE agent, then have the agent inspect that folder. Many hosted AI agents do not accept ZIP files. If folder access or ZIP upload is not supported, attach `00_TELEMEMETRY_FULL_AUDIT.txt` as the plain-text all-in-one fallback. If that file is too large for the AI assistant, attach `AI_AUDIT_PACKET.md` or the individual files instead.
 
-Universal single-file option:
+Ideal option:
+
+- Extract the archive into an AI-agent-accessible folder and inspect the folder files directly.
+
+Fallback single-file option:
+
+- `00_TELEMEMETRY_FULL_AUDIT.txt`
+
+Smaller summary option:
 
 - `AI_AUDIT_PACKET.md`
 
@@ -24,7 +32,7 @@ Additional files for deeper audit:
 
 Some generated bundles may also include `launchable_version.json`; if present, inspect it and compare it to any launchable/version fields in `metrics.json`.
 
-If neither `AI_AUDIT_PACKET.md` nor the minimum file set is attached or accessible, stop and say: **NOT TESTED - evidence files were not provided or could not be read. Attach AI_AUDIT_PACKET.md, or attach manifest.json, metrics.json, RESULT_SUMMARY.txt, VERIFY.txt, and prompt.md as individual files.** Do not critique the prompt. Do not provide suggestions for improving the prompt unless explicitly asked after the audit.
+If neither `00_TELEMEMETRY_FULL_AUDIT.txt`, `AI_AUDIT_PACKET.md`, nor the minimum file set is attached or accessible, stop and say: **NOT TESTED - evidence files were not provided or could not be read. Attach 00_TELEMEMETRY_FULL_AUDIT.txt, AI_AUDIT_PACKET.md, or attach manifest.json, metrics.json, RESULT_SUMMARY.txt, VERIFY.txt, and prompt.md as individual files.** Do not critique the prompt. Do not provide suggestions for improving the prompt unless explicitly asked after the audit.
 
 If the minimum file set is accessible but the large JSONL files are not accessible, proceed with the file audit anyway. Mark raw-record inspection as `PARTIAL` or `NOT TESTED` as appropriate. If source-code files such as `run.py` or `verify.py` are not accessible, proceed with the bundle-file audit anyway. Mark only the source-code and execution objectives `NOT TESTED`. Do not ask for repository files before auditing the supplied files.
 

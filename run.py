@@ -91,6 +91,57 @@ def build_manifest(run_dir: Path, files: list[str]) -> dict:
     }
 
 
+def read_section(run_dir: Path, name: str) -> str:
+    path = run_dir / name
+    if not path.exists():
+        return f"[{name} not present]\n"
+    return path.read_text(encoding="utf-8")
+
+
+def build_full_audit_text(run_dir: Path, section_names: list[str]) -> str:
+    lines = [
+        "TELEMEMETRY FULL AUDIT EVIDENCE",
+        "",
+        "FALLBACK SINGLE-FILE OPTION.",
+        "",
+        "Ideal workflow: extract the evidence archive into a folder that your local AI or IDE agent",
+        "can read, then ask the agent to inspect the files in that folder.",
+        "",
+        "Use this file when the agent cannot access the extracted folder, rejects ZIP/TAR/PDF uploads,",
+        "or only accepts one plain-text attachment. It contains the prompts, summary, verification",
+        "text, metrics, manifest, and full raw JSONL evidence from the generated result bundle.",
+        "",
+        "Instruction to reviewer:",
+        "- Audit the evidence in this file. Do not critique the prompt itself.",
+        "- If your context window cannot read the whole file, audit the visible sections and mark any",
+        "  omitted raw-record inspection as PARTIAL or NOT TESTED.",
+        "- If an extracted evidence folder is available, inspect the folder files directly.",
+        "- If only this text file is available, audit this text file and do not ask for a ZIP first.",
+        "- Do not ask for source code before completing the bundle-file audit. Mark source-code or",
+        "  runtime-execution objectives NOT TESTED if code is unavailable.",
+        "",
+        "Important integrity note:",
+        "- The manifest section covers the source evidence files in the bundle.",
+        "- This all-in-one text file is generated after the manifest so it can include the manifest",
+        "  without creating a recursive self-hash.",
+        "",
+    ]
+
+    for name in section_names:
+        lines.extend([
+            "",
+            "=" * 88,
+            f"BEGIN FILE: {name}",
+            "=" * 88,
+            read_section(run_dir, name).rstrip(),
+            "=" * 88,
+            f"END FILE: {name}",
+            "=" * 88,
+            "",
+        ])
+    return "\n".join(lines).rstrip() + "\n"
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run the public TeleMemetry reproduction benchmark.")
     parser.add_argument("--turns", type=int, default=3000)
@@ -250,7 +301,9 @@ def main() -> int:
         "- Does not disclose TeleMemetry production engine internals.\n"
         "\n"
         "Review next steps\n"
-        "- Most AI assistants do not accept ZIP files. Use AI_AUDIT_PACKET.md as the universal single-file review packet.\n"
+        "- Ideal path: extract the archive into a folder accessible by your local AI or IDE agent, then ask it to inspect that folder.\n"
+        "- Fallback path: use 00_TELEMEMETRY_FULL_AUDIT.txt as the single-file plain-text audit packet.\n"
+        "- If the full text file is too large for the assistant, use AI_AUDIT_PACKET.md as the smaller summary packet.\n"
         "- If the assistant accepts multiple files, attach individual files first, then paste prompt.md for standard AI-assisted review.\n"
         "- Minimum files: manifest.json, metrics.json, RESULT_SUMMARY.txt, VERIFY.txt, prompt.md.\n"
         "- For deeper review, also attach dataset.jsonl, evidence_packets.jsonl, and outputs.jsonl if the assistant accepts larger files.\n"
@@ -285,7 +338,7 @@ def main() -> int:
         "\n"
         "## Files Represented\n"
         "\n"
-        "These files are included in the full evidence bundle: manifest.json, metrics.json, VERIFY.txt, "
+        "These files are included in the full evidence bundle: 00_TELEMEMETRY_FULL_AUDIT.txt, manifest.json, metrics.json, VERIFY.txt, "
         "RESULT_SUMMARY.txt, prompt.md, AUDIT_PROMPT.md, launchable_version.json, dataset.jsonl, "
         "evidence_packets.jsonl, outputs.jsonl.\n"
         "\n"
@@ -338,6 +391,25 @@ def main() -> int:
         manifest_files.append("AUDIT_PROMPT.md")
     manifest = build_manifest(run_dir, manifest_files)
     (run_dir / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8", newline="\n")
+
+    full_audit_sections = [
+        "RESULT_SUMMARY.txt",
+        "VERIFY.txt",
+        "metrics.json",
+        "launchable_version.json",
+        "manifest.json",
+        "prompt.md",
+        "AUDIT_PROMPT.md",
+        "AI_AUDIT_PACKET.md",
+        "dataset.jsonl",
+        "evidence_packets.jsonl",
+        "outputs.jsonl",
+    ]
+    (run_dir / "00_TELEMEMETRY_FULL_AUDIT.txt").write_text(
+        build_full_audit_text(run_dir, full_audit_sections),
+        encoding="utf-8",
+        newline="\n",
+    )
 
     latest = out_root / "latest"
     if latest.exists() or latest.is_symlink():
