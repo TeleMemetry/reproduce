@@ -1219,8 +1219,8 @@ HTML = """<!doctype html>
       <a href="/file/results/latest/dataset.jsonl" target="_blank">View Raw Telemetry In ↗</a>
       <a href="/file/results/latest/evidence_packets.jsonl" target="_blank">View Evidence Packets ↗</a>
       <a href="/file/results/latest/outputs.jsonl" target="_blank">View Verified Outputs ↗</a>
-      <a href="/bundle/latest.tar.gz" download>Download Evidence Bundle (.tar.gz) ↗</a>
-      <a href="/bundle/latest.zip" download>Download Evidence Bundle (.zip) ↗</a>
+      <a href="/bundle/latest.tar.gz" download>Auditable Evidence Folder (.tar.gz) ↗</a>
+      <a href="/bundle/latest.zip" download>Auditable Evidence Folder (.zip) ↗</a>
     </section>
 
     <section class="log-wrap" id="log-wrap" aria-label="Output terminal">
