@@ -1181,7 +1181,7 @@ HTML = """<!doctype html>
     </section>
 
     <section class="result" id="result" aria-label="Benchmark result">
-      <button class="copy-evidence" id="copy-evidence" type="button">Copy Benchmark Evidence for AI</button>
+      <button class="copy-evidence" id="copy-evidence" type="button">Copy Run Summary</button>
       <p class="result-copy" id="result-copy"></p>
       <p class="result-why">Benchmark relevance: a field appliance, robot, vehicle, or satellite can keep long operational history outside the model, then retrieve the exact state needed for the next decision without replaying the whole history into context.</p>
       <ul class="result-metrics">
@@ -1411,7 +1411,7 @@ HTML = """<!doctype html>
   }
 
   copyEvidenceButton.addEventListener('click', function () {
-    copyTextWithFeedback(copyEvidenceButton, logEl.textContent || '', 'Evidence copied', 'Copy Benchmark Evidence for AI');
+    copyTextWithFeedback(copyEvidenceButton, logEl.textContent || '', 'Summary copied', 'Copy Run Summary');
   });
 
   copyLogButton.addEventListener('click', function () {
