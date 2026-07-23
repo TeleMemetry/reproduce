@@ -955,23 +955,23 @@ HTML = """<!doctype html>
 
     .copy-evidence {
       justify-self: center;
-      min-height: 52px;
-      margin: 0 auto 4px;
-      border: 1px solid rgba(140, 193, 193, .72);
+      min-height: 58px;
+      margin: 0 auto 8px;
+      border: 1px solid rgba(100, 155, 155, .9);
       border-radius: 8px;
-      background: rgb(250, 253, 253);
-      color: var(--teal-dark);
-      padding: 0 18px;
-      font-size: 13.5pt;
-      font-weight: 500;
+      background: var(--teal-dark);
+      color: #fff;
+      padding: 0 22px;
+      font-size: 14.5pt;
+      font-weight: 800;
       box-shadow:
         inset 0 1px 0 rgba(255, 255, 255, .88),
-        0 8px 18px rgba(20, 24, 32, .04);
+        0 12px 24px rgba(56, 125, 131, .22);
       transition: transform .16s ease, background .16s ease, border-color .16s ease;
     }
 
     .copy-evidence:hover {
-      background: rgba(140, 193, 193, .12);
+      background: rgb(84, 138, 138);
       border-color: var(--teal-dark);
       transform: scale(1.035);
     }
@@ -1181,7 +1181,7 @@ HTML = """<!doctype html>
     </section>
 
     <section class="result" id="result" aria-label="Benchmark result">
-      <button class="copy-evidence" id="copy-evidence" type="button">Copy Benchmark Evidence for AI</button>
+      <button class="copy-evidence" id="copy-evidence" type="button">Copy Quick Validation Brief</button>
       <p class="result-copy" id="result-copy"></p>
       <p class="result-why">Benchmark relevance: a field appliance, robot, vehicle, or satellite can keep long operational history outside the model, then retrieve the exact state needed for the next decision without replaying the whole history into context.</p>
       <ul class="result-metrics">
@@ -1212,6 +1212,9 @@ HTML = """<!doctype html>
 
     <section class="files" id="files" aria-label="Result files">
       <h2>TeleMemetry&trade; Result Packages</h2>
+      <a href="/file/results/latest/00_START_HERE.txt" target="_blank">Open Start Here</a>
+      <a href="/file/results/latest/01_QUICK_VALIDATION.txt" target="_blank">View Quick Validation Brief</a>
+      <a href="/file/results/latest/README.md" target="_blank">View Bundle README</a>
       <a href="/file/results/latest/RESULT_SUMMARY.txt" target="_blank">View Result Summary ↗</a>
       <a href="/file/results/latest/prompt.md" target="_blank">View AI Audit Prompt ↗</a>
       <a href="/file/results/latest/metrics.json" target="_blank">View Metrics ↗</a>
@@ -1351,6 +1354,7 @@ HTML = """<!doctype html>
 
   function showResult(data, statusText) {
     var metrics = data.metrics;
+    window.__latestMetrics = metrics;
     var exactRecallPercent = Math.round(metrics.recall.exact_match_rate * 10000) / 100;
 
     function setMetric(id, numberText, labelText) {
@@ -1410,8 +1414,42 @@ HTML = """<!doctype html>
     });
   }
 
+  function buildQuickValidationBrief(metrics) {
+    return [
+      'TeleMemetry Quick Validation Brief',
+      '',
+      'Audience assumption: this analysis assumes the reviewer has a dedicated local AI or IDE agent with folder access to the extracted TeleMemetry evidence bundle. It is not designed for browser-chat upload verification.',
+      '',
+      'Recommended workflow:',
+      '1. Download and extract the evidence bundle.',
+      '2. Open the extracted folder in a local AI or IDE agent.',
+      '3. Start with 00_START_HERE.txt and 01_QUICK_VALIDATION.txt.',
+      '4. For full validation, inspect manifest.json, metrics.json, RESULT_SUMMARY.txt, VERIFY.txt, outputs.jsonl, evidence_packets.jsonl, and dataset.jsonl from the folder.',
+      '',
+      'Reported values from this run:',
+      '- Verified recall: ' + formatNumber(metrics.recall.verified_turns) + ' / ' + formatNumber(metrics.recall.total_turns),
+      '- Final verified output failures: ' + formatNumber(metrics.recall.final_verified_output_failures),
+      '- Exact match rate: ' + metrics.recall.exact_match_rate,
+      '- Average bounded packet tokens per turn estimate: ' + formatNumber(metrics.token_accounting.average_packet_tokens_per_turn_estimate),
+      '- Full-history replay baseline per turn estimate: ' + formatNumber(metrics.token_accounting.full_history_replay_tokens_per_turn_estimate),
+      '- Replay reduction estimate: ' + formatNumber(metrics.token_accounting.replay_reduction_ratio_estimate) + 'x',
+      '',
+      'Supported if folder inspection confirms it:',
+      '- Scoped exact operational-state recall for this public benchmark.',
+      '- Bounded evidence packets compared with a full-history replay token baseline.',
+      '- SHA256 receipts for ordinary artifact-change detection.',
+      '',
+      'Not proven by this bundle alone:',
+      '- Production engine internals.',
+      '- Robotics, AV, or industrial safety certification.',
+      '- Universal semantic memory or chatbot reasoning quality.',
+      '- Separate flagship, live-feed, or GPU-power claims unless those artifacts are supplied.'
+    ].join('\n');
+  }
+
   copyEvidenceButton.addEventListener('click', function () {
-    copyTextWithFeedback(copyEvidenceButton, logEl.textContent || '', 'Evidence copied', 'Copy Benchmark Evidence for AI');
+    if (!window.__latestMetrics) return;
+    copyTextWithFeedback(copyEvidenceButton, buildQuickValidationBrief(window.__latestMetrics), 'Brief copied', 'Copy Quick Validation Brief');
   });
 
   copyLogButton.addEventListener('click', function () {

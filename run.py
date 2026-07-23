@@ -91,57 +91,6 @@ def build_manifest(run_dir: Path, files: list[str]) -> dict:
     }
 
 
-def read_section(run_dir: Path, name: str) -> str:
-    path = run_dir / name
-    if not path.exists():
-        return f"[{name} not present]\n"
-    return path.read_text(encoding="utf-8")
-
-
-def build_full_audit_text(run_dir: Path, section_names: list[str]) -> str:
-    lines = [
-        "TELEMEMETRY FULL AUDIT EVIDENCE",
-        "",
-        "FALLBACK SINGLE-FILE OPTION.",
-        "",
-        "Ideal workflow: extract the evidence archive into a folder that your local AI or IDE agent",
-        "can read, then ask the agent to inspect the files in that folder.",
-        "",
-        "Use this file when the agent cannot access the extracted folder, rejects ZIP/TAR/PDF uploads,",
-        "or only accepts one plain-text attachment. It contains the prompts, summary, verification",
-        "text, metrics, manifest, and full raw JSONL evidence from the generated result bundle.",
-        "",
-        "Instruction to reviewer:",
-        "- Audit the evidence in this file. Do not critique the prompt itself.",
-        "- If your context window cannot read the whole file, audit the visible sections and mark any",
-        "  omitted raw-record inspection as PARTIAL or NOT TESTED.",
-        "- If an extracted evidence folder is available, inspect the folder files directly.",
-        "- If only this text file is available, audit this text file and do not ask for a ZIP first.",
-        "- Do not ask for source code before completing the bundle-file audit. Mark source-code or",
-        "  runtime-execution objectives NOT TESTED if code is unavailable.",
-        "",
-        "Important integrity note:",
-        "- The manifest section covers the source evidence files in the bundle.",
-        "- This all-in-one text file is generated after the manifest so it can include the manifest",
-        "  without creating a recursive self-hash.",
-        "",
-    ]
-
-    for name in section_names:
-        lines.extend([
-            "",
-            "=" * 88,
-            f"BEGIN FILE: {name}",
-            "=" * 88,
-            read_section(run_dir, name).rstrip(),
-            "=" * 88,
-            f"END FILE: {name}",
-            "=" * 88,
-            "",
-        ])
-    return "\n".join(lines).rstrip() + "\n"
-
-
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run the public TeleMemetry reproduction benchmark.")
     parser.add_argument("--turns", type=int, default=3000)
@@ -301,20 +250,91 @@ def main() -> int:
         "- Does not disclose TeleMemetry production engine internals.\n"
         "\n"
         "Review next steps\n"
-        "- Ideal path: extract the archive into a folder accessible by your local AI or IDE agent, then ask it to inspect that folder.\n"
-        "- Fallback path: use 00_TELEMEMETRY_FULL_AUDIT.txt as the single-file plain-text audit packet.\n"
-        "- If the full text file is too large for the assistant, use AI_AUDIT_PACKET.md as the smaller summary packet.\n"
-        "- If the assistant accepts multiple files, attach individual files first, then paste prompt.md for standard AI-assisted review.\n"
+        "- Audience assumption: this analysis assumes a dedicated local AI or IDE agent with folder access to the extracted evidence bundle.\n"
+        "- This package is not designed for browser-chat upload verification.\n"
+        "- Start with 00_START_HERE.txt, then 01_QUICK_VALIDATION.txt.\n"
+        "- For deeper review, have the local agent inspect the raw JSONL files directly from the folder.\n"
         "- Minimum files: manifest.json, metrics.json, RESULT_SUMMARY.txt, VERIFY.txt, prompt.md.\n"
-        "- For deeper review, also attach dataset.jsonl, evidence_packets.jsonl, and outputs.jsonl if the assistant accepts larger files.\n"
-        "- For skeptical review, attach the files first, then paste AUDIT_PROMPT.md. The reviewer must audit the attached files, not critique the prompt.\n"
+        "- For skeptical review, use AUDIT_PROMPT.md after the agent has folder access. The reviewer must audit the files, not critique the prompt.\n"
     )
     (run_dir / "RESULT_SUMMARY.txt").write_text(summary_text, encoding="utf-8", newline="\n")
+
+    start_here_text = (
+        "TeleMemetry Evidence Bundle - START HERE\n"
+        "\n"
+        "Audience assumption: this analysis assumes the reviewer has a dedicated local AI or IDE agent with folder access to this extracted evidence bundle. It is not designed for browser-chat upload verification.\n"
+        "\n"
+        "Recommended workflow\n"
+        "1. Extract the archive into a normal folder.\n"
+        "2. Open that folder in an IDE or local AI agent that can read files from disk.\n"
+        "3. Ask the agent to inspect this folder and begin with 01_QUICK_VALIDATION.txt.\n"
+        "4. For a deeper audit, ask it to inspect manifest.json, metrics.json, RESULT_SUMMARY.txt, VERIFY.txt, outputs.jsonl, evidence_packets.jsonl, and dataset.jsonl.\n"
+        "5. For a skeptical audit, use AUDIT_PROMPT.md after the agent has folder access.\n"
+        "\n"
+        "Do not paste the large JSONL files into a browser chat. They are intended for file inspection from the extracted folder.\n"
+        "\n"
+        "Primary files\n"
+        "- 01_QUICK_VALIDATION.txt - short validation brief for executives, engineers, and AI agents.\n"
+        "- AI_AUDIT_PACKET.md - small hosted-AI fallback summary, not a full raw-record audit.\n"
+        "- AUDIT_PROMPT.md - skeptical independent audit prompt for folder-aware reviewers.\n"
+        "- manifest.json - SHA256 receipts for evidence files.\n"
+        "- metrics.json - reported benchmark measurements.\n"
+        "- outputs.jsonl, evidence_packets.jsonl, dataset.jsonl - raw audit evidence for local file inspection.\n"
+    )
+    (run_dir / "00_START_HERE.txt").write_text(start_here_text, encoding="utf-8", newline="\n")
+    (run_dir / "README.md").write_text(
+        "# TeleMemetry Evidence Bundle\n"
+        "\n"
+        "**Audience assumption:** this analysis assumes the reviewer has a dedicated local AI or IDE agent with folder access to this extracted evidence bundle. It is not designed for browser-chat upload verification.\n"
+        "\n"
+        "Start with `00_START_HERE.txt`, then read `01_QUICK_VALIDATION.txt`.\n"
+        "\n"
+        "For a full audit, inspect `manifest.json`, `metrics.json`, `RESULT_SUMMARY.txt`, `VERIFY.txt`, `outputs.jsonl`, `evidence_packets.jsonl`, and `dataset.jsonl` directly from this folder.\n"
+        "\n"
+        "Use `AUDIT_PROMPT.md` for skeptical independent review after the local AI or IDE agent has folder access.\n",
+        encoding="utf-8",
+        newline="\n",
+    )
+
+    quick_validation_text = (
+        "TeleMemetry Quick Validation Brief\n"
+        "\n"
+        "Audience assumption: this analysis assumes the reviewer has a dedicated local AI or IDE agent with folder access to this extracted evidence bundle. It is not designed for browser-chat upload verification.\n"
+        "\n"
+        "What to validate first\n"
+        f"- Benchmark: {metrics['benchmark']}\n"
+        f"- Launchable version: {metrics['launchable']['version']}\n"
+        f"- Source commit: {metrics['launchable']['source_commit']}\n"
+        f"- Scope: {args.turns} turns, {len(fields)} fields, {args.episodes} episodes, {len(dataset)} records\n"
+        f"- Verified recall: {verified} / {args.turns}\n"
+        f"- Final verified output failures: {args.turns - verified}\n"
+        f"- Exact match rate: {metrics['recall']['exact_match_rate']}\n"
+        f"- Average bounded packet tokens per turn estimate: {metrics['token_accounting']['average_packet_tokens_per_turn_estimate']}\n"
+        f"- Full-history replay baseline per turn estimate: {full_history_tokens_per_turn}\n"
+        f"- Replay reduction estimate: {metrics['token_accounting']['replay_reduction_ratio_estimate']}x\n"
+        "\n"
+        "Folder-aware AI agent instruction\n"
+        "Inspect the extracted evidence folder. Do not rely on this brief alone. Check metrics.json and RESULT_SUMMARY.txt for reported values, VERIFY.txt for verification output, manifest.json for SHA256 receipts, and sample or scan outputs.jsonl/evidence_packets.jsonl/dataset.jsonl for exact-match evidence. If source code is unavailable, mark source-code execution objectives NOT TESTED, but still audit the supplied evidence files.\n"
+        "\n"
+        "Supported by this bundle if file inspection confirms it\n"
+        "- Scoped exact operational-state recall for the generated public benchmark.\n"
+        "- Bounded evidence packets compared with a full-history replay token baseline.\n"
+        "- SHA256 receipts that detect ordinary artifact changes.\n"
+        "\n"
+        "Not proven by this bundle alone\n"
+        "- TeleMemetry production engine internals.\n"
+        "- Robotics, AV, or industrial safety certification.\n"
+        "- Universal semantic memory or chatbot reasoning quality.\n"
+        "- The 100k flagship run, CelesTrak snapshot, or GPU power claim unless those artifacts are separately supplied.\n"
+    )
+    (run_dir / "01_QUICK_VALIDATION.txt").write_text(quick_validation_text, encoding="utf-8", newline="\n")
 
     audit_packet_text = (
         "# TeleMemetry Universal AI Audit Packet\n"
         "\n"
-        "Use this file when an AI assistant does not accept ZIP files or multiple large attachments.\n"
+        "Audience assumption: this analysis assumes the reviewer has a dedicated local AI or IDE agent with folder access to the extracted evidence bundle. It is not designed for browser-chat upload verification.\n"
+        "\n"
+        "Use this file only as a compact fallback summary when a reviewer cannot inspect the extracted folder yet. For real validation, use 00_START_HERE.txt and 01_QUICK_VALIDATION.txt from the extracted folder.\n"
         "\n"
         "Instruction to reviewer: audit this packet as file-inspection evidence. Do not critique the prompt. "
         "If you cannot inspect the full JSONL files, mark raw-record inspection as PARTIAL or NOT TESTED. "
@@ -338,7 +358,7 @@ def main() -> int:
         "\n"
         "## Files Represented\n"
         "\n"
-        "These files are included in the full evidence bundle: 00_TELEMEMETRY_FULL_AUDIT.txt, manifest.json, metrics.json, VERIFY.txt, "
+        "These files are included in the full evidence bundle: 00_START_HERE.txt, 01_QUICK_VALIDATION.txt, manifest.json, metrics.json, VERIFY.txt, "
         "RESULT_SUMMARY.txt, prompt.md, AUDIT_PROMPT.md, launchable_version.json, dataset.jsonl, "
         "evidence_packets.jsonl, outputs.jsonl.\n"
         "\n"
@@ -384,32 +404,13 @@ def main() -> int:
     )
     (run_dir / "AI_AUDIT_PACKET.md").write_text(audit_packet_text, encoding="utf-8", newline="\n")
 
-    manifest_files = ["dataset.jsonl", "evidence_packets.jsonl", "outputs.jsonl", "metrics.json", "launchable_version.json", "VERIFY.txt", "RESULT_SUMMARY.txt", "AI_AUDIT_PACKET.md"]
+    manifest_files = ["dataset.jsonl", "evidence_packets.jsonl", "outputs.jsonl", "metrics.json", "launchable_version.json", "VERIFY.txt", "RESULT_SUMMARY.txt", "00_START_HERE.txt", "01_QUICK_VALIDATION.txt", "README.md", "AI_AUDIT_PACKET.md"]
     if (run_dir / "prompt.md").exists():
         manifest_files.append("prompt.md")
     if (run_dir / "AUDIT_PROMPT.md").exists():
         manifest_files.append("AUDIT_PROMPT.md")
     manifest = build_manifest(run_dir, manifest_files)
     (run_dir / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8", newline="\n")
-
-    full_audit_sections = [
-        "RESULT_SUMMARY.txt",
-        "VERIFY.txt",
-        "metrics.json",
-        "launchable_version.json",
-        "manifest.json",
-        "prompt.md",
-        "AUDIT_PROMPT.md",
-        "AI_AUDIT_PACKET.md",
-        "dataset.jsonl",
-        "evidence_packets.jsonl",
-        "outputs.jsonl",
-    ]
-    (run_dir / "00_TELEMEMETRY_FULL_AUDIT.txt").write_text(
-        build_full_audit_text(run_dir, full_audit_sections),
-        encoding="utf-8",
-        newline="\n",
-    )
 
     latest = out_root / "latest"
     if latest.exists() or latest.is_symlink():

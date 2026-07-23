@@ -1,18 +1,17 @@
 # AI Audit Prompt
 
-You are reviewing a TeleMemetry public reproduction result package. The ideal workflow is to extract the evidence archive into a folder accessible by your local AI or IDE agent, then ask the agent to inspect that folder. If folder access or file uploads are limited, attach `00_TELEMEMETRY_FULL_AUDIT.txt` as the plain-text all-in-one fallback. If that file is too large for your AI assistant, attach `AI_AUDIT_PACKET.md` as the smaller summary packet. If your AI assistant accepts multiple files, attach the listed files individually. If it accepts ZIP files, the evidence-bundle ZIP is okay. Do not answer from this prompt alone.
+Audience assumption: this analysis assumes you have a dedicated local AI or IDE agent with folder access to the extracted TeleMemetry evidence bundle. It is not designed for browser-chat upload verification.
+
+You are reviewing a TeleMemetry public reproduction result package. Open the extracted evidence folder in your local AI or IDE agent, then inspect the files directly. Do not answer from this prompt alone.
 
 Ideal option:
 
 - Extract the archive into an AI-agent-accessible folder and inspect the folder files directly.
 
-Fallback single-file option:
+Start here:
 
-- `00_TELEMEMETRY_FULL_AUDIT.txt`
-
-Smaller summary option:
-
-- `AI_AUDIT_PACKET.md`
+- `00_START_HERE.txt`
+- `01_QUICK_VALIDATION.txt`
 
 Minimum multi-file option:
 

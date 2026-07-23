@@ -1,5 +1,7 @@
 # TeleMemetry Reproduce
 
+Audience assumption: this analysis assumes you have a dedicated local AI or IDE agent with folder access to the extracted TeleMemetry evidence bundle. It is not designed for browser-chat upload verification.
+
 Public reproduction kit for scoped TeleMemetry-style verified recall benchmarks.
 
 This repo is intentionally small. It does not contain TeleMemetry production engine internals, private telemetry, credentials, model weights, or customer data. It gives reviewers a safe way to generate a deterministic result package and verify the five public mechanics:
@@ -29,7 +31,7 @@ User path:
 3. Click **Run Demo**.
 4. Read the result cards.
 
-Why: this avoids terminal and notebook navigation. The browser UI runs the benchmark, verifies the package, and links to the result summary, AI audit prompt, metrics, and SHA256 manifest.
+Why: this avoids terminal and notebook navigation. The browser UI runs the benchmark, verifies the package, and links to the start-here file, quick validation brief, result summary, AI audit prompt, metrics, and SHA256 manifest.
 
 If the startup command is not available, open a terminal and run:
 
@@ -102,7 +104,10 @@ Expected files:
 - `manifest.json` - file sizes and SHA256 receipts
 - `VERIFY.txt` - human-readable verification summary
 - `RESULT_SUMMARY.txt` - plain-language result summary
-- `prompt.md` - prompt for ChatGPT, Codex, Claude, Gemini, or another AI reviewer
+- `00_START_HERE.txt` - first file for humans and folder-aware local AI or IDE agents
+- `01_QUICK_VALIDATION.txt` - short validation brief for executives, engineers, and AI agents
+- `README.md` - evidence-bundle folder README
+- `prompt.md` - prompt for a local AI or IDE agent with folder access
 - `AUDIT_PROMPT.md` - skeptical audit prompt for challenging the result package and claim boundaries
 
 `verify.py` recomputes manifest hashes, source-record hashes, evidence-packet token estimates, replay-reduction math, and exact output matches from the generated artifacts.
@@ -162,9 +167,9 @@ python3 run.py --turns 10000 --fields 10 --episodes 20
 
 ## AI Review
 
-After running the benchmark, paste `results/latest/prompt.md` into an AI assistant and attach or paste the generated result files. The prompt asks the AI to inspect the metrics, receipts, scope, and supported claims.
+After running the benchmark, open `results/latest` as a folder in a local AI or IDE agent. Start with `00_START_HERE.txt`, then `01_QUICK_VALIDATION.txt`. The prompt asks the AI to inspect the metrics, receipts, scope, and supported claims.
 
-For a tougher review, paste `results/latest/AUDIT_PROMPT.md` into an AI assistant with the same generated files. That prompt asks the reviewer to inspect the code path, token math, SHA256 receipts, scale limits, scope leakage, and claims that remain outside this public reproduction kit.
+For a tougher review, use `results/latest/AUDIT_PROMPT.md` after the agent has folder access. That prompt asks the reviewer to inspect the code path, token math, SHA256 receipts, scale limits, scope leakage, and claims that remain outside this public reproduction kit.
 
 ## License
 
