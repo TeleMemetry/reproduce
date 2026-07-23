@@ -215,6 +215,9 @@ def main() -> int:
     bundle_validator = Path("validate_bundle.py")
     if bundle_validator.exists():
         shutil.copyfile(bundle_validator, run_dir / "validate_bundle.py")
+    folder_auditor = Path("audit_folder.py")
+    if folder_auditor.exists():
+        shutil.copyfile(folder_auditor, run_dir / "audit_folder.py")
 
     verify_text = (
         "TeleMemetry public reproduce verification\n"
@@ -270,7 +273,7 @@ def main() -> int:
     start_here_text = (
         "TeleMemetry Evidence Bundle - START HERE\n"
         "\n"
-        "Copy-paste this into your local IDE agent: Audit this folder. First run `python validate_bundle.py`, then verify that manifest.json hashes match the evidence files, confirm dataset/evidence/output row counts against metrics.json, validate 1:1 exact matches in outputs.jsonl, and confirm bounded packet tokens average matches the reported replay-reduction math.\n"
+        "Copy-paste this into your local IDE agent: Audit this folder properly. Read 00_START_HERE.txt first, run `python audit_folder.py`, then read AUDIT_REPORT.txt and verify the cited evidence in manifest.json, metrics.json, outputs.jsonl, evidence_packets.jsonl, and dataset.jsonl.\n"
         "\n"
         "Audience assumption: this analysis assumes the reviewer has a dedicated local AI or IDE agent with folder access to this extracted evidence bundle. It is not designed for browser-chat upload verification.\n"
         "\n"
@@ -278,9 +281,10 @@ def main() -> int:
         "1. Extract the archive into a normal folder.\n"
         "2. Open that folder in an IDE or local AI agent that can read files from disk.\n"
         "3. Ask the agent to inspect this folder and begin with 01_QUICK_VALIDATION.txt.\n"
-        "4. Run `python validate_bundle.py` from this folder for a fast programmatic check.\n"
-        "5. For a deeper audit, ask it to inspect manifest.json, metrics.json, RESULT_SUMMARY.txt, VERIFY.txt, outputs.jsonl, evidence_packets.jsonl, and dataset.jsonl.\n"
-        "6. For a skeptical audit, use AUDIT_PROMPT.md after the agent has folder access.\n"
+        "4. Run `python audit_folder.py` from this folder for a real automated audit report.\n"
+        "5. Run `python validate_bundle.py` from this folder for a shorter smoke test.\n"
+        "6. For a deeper audit, ask it to inspect manifest.json, metrics.json, RESULT_SUMMARY.txt, VERIFY.txt, outputs.jsonl, evidence_packets.jsonl, and dataset.jsonl.\n"
+        "7. For a skeptical audit, use AUDIT_PROMPT.md after the agent has folder access.\n"
         "\n"
         "Do not paste the large JSONL files into a browser chat. They are intended for file inspection from the extracted folder.\n"
         "\n"
@@ -290,7 +294,8 @@ def main() -> int:
         "- AUDIT_PROMPT.md - skeptical independent audit prompt for folder-aware reviewers.\n"
         "- manifest.json - SHA256 receipts for evidence files.\n"
         "- metrics.json - reported benchmark measurements.\n"
-        "- validate_bundle.py - zero-dependency quick validator for hashes, row counts, exact matches, and token math.\n"
+        "- audit_folder.py - automated folder audit that writes AUDIT_REPORT.txt and AUDIT_REPORT.json.\n"
+        "- validate_bundle.py - zero-dependency quick smoke test for hashes, row counts, exact matches, and token math.\n"
         "- outputs.jsonl, evidence_packets.jsonl, dataset.jsonl - raw audit evidence for local file inspection.\n"
     )
     (run_dir / "00_START_HERE.txt").write_text(start_here_text, encoding="utf-8", newline="\n")
@@ -301,7 +306,7 @@ def main() -> int:
         "\n"
         "Start with `00_START_HERE.txt`, then read `01_QUICK_VALIDATION.txt`.\n"
         "\n"
-        "Fast path: run `python validate_bundle.py` from this folder.\n"
+        "Fast path: run `python audit_folder.py` from this folder, then read `AUDIT_REPORT.txt`.\n"
         "\n"
         "For a full audit, inspect `manifest.json`, `metrics.json`, `RESULT_SUMMARY.txt`, `VERIFY.txt`, `outputs.jsonl`, `evidence_packets.jsonl`, and `dataset.jsonl` directly from this folder.\n"
         "\n"
@@ -329,7 +334,7 @@ def main() -> int:
         f"- Replay reduction estimate: {metrics['token_accounting']['replay_reduction_ratio_estimate']}x\n"
         "\n"
         "Folder-aware AI agent instruction\n"
-        "Inspect the extracted evidence folder. Do not rely on this brief alone. First run `python validate_bundle.py`. Then check metrics.json and RESULT_SUMMARY.txt for reported values, VERIFY.txt for verification output, manifest.json for SHA256 receipts, and sample or scan outputs.jsonl/evidence_packets.jsonl/dataset.jsonl for exact-match evidence. If source code is unavailable, mark source-code execution objectives NOT TESTED, but still audit the supplied evidence files.\n"
+        "Inspect the extracted evidence folder. Do not rely on this brief alone. First run `python audit_folder.py`, then read AUDIT_REPORT.txt. Then check metrics.json and RESULT_SUMMARY.txt for reported values, VERIFY.txt for verification output, manifest.json for SHA256 receipts, and sample or scan outputs.jsonl/evidence_packets.jsonl/dataset.jsonl for exact-match evidence. If source code is unavailable, mark source-code execution objectives NOT TESTED, but still audit the supplied evidence files.\n"
         "\n"
         "Supported by this bundle if file inspection confirms it\n"
         "- Scoped exact operational-state recall for the generated public benchmark.\n"
@@ -422,6 +427,8 @@ def main() -> int:
     manifest_files = ["dataset.jsonl", "evidence_packets.jsonl", "outputs.jsonl", "metrics.json", "launchable_version.json", "VERIFY.txt", "RESULT_SUMMARY.txt", "00_START_HERE.txt", "01_QUICK_VALIDATION.txt", "README.md", "AI_AUDIT_PACKET.md"]
     if (run_dir / "validate_bundle.py").exists():
         manifest_files.append("validate_bundle.py")
+    if (run_dir / "audit_folder.py").exists():
+        manifest_files.append("audit_folder.py")
     if (run_dir / "prompt.md").exists():
         manifest_files.append("prompt.md")
     if (run_dir / "AUDIT_PROMPT.md").exists():

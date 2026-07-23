@@ -109,6 +109,7 @@ Expected files:
 - `README.md` - evidence-bundle folder README
 - `prompt.md` - prompt for a local AI or IDE agent with folder access
 - `AUDIT_PROMPT.md` - skeptical audit prompt for challenging the result package and claim boundaries
+- `audit_folder.py` - automated folder audit that writes `AUDIT_REPORT.txt` and `AUDIT_REPORT.json`
 - `validate_bundle.py` - zero-dependency quick validator for hashes, counts, exact matches, and token math
 
 `verify.py` recomputes manifest hashes, source-record hashes, evidence-packet token estimates, replay-reduction math, and exact output matches from the generated artifacts.
@@ -174,7 +175,7 @@ Fast path:
 
 ```bash
 cd results/latest
-python validate_bundle.py
+python audit_folder.py
 ```
 
 For a tougher review, use `results/latest/AUDIT_PROMPT.md` after the agent has folder access. That prompt asks the reviewer to inspect the code path, token math, SHA256 receipts, scale limits, scope leakage, and claims that remain outside this public reproduction kit.

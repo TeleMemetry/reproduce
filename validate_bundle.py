@@ -39,8 +39,8 @@ def require(condition: bool, message: str) -> None:
 
 
 def main() -> int:
-    metrics = json.loads((ROOT / "metrics.json").read_text(encoding="utf-8"))
-    manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
+    metrics = json.loads((ROOT / "metrics.json").read_text(encoding="utf-8-sig"))
+    manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8-sig"))
     dataset = load_jsonl("dataset.jsonl")
     packets = load_jsonl("evidence_packets.jsonl")
     outputs = load_jsonl("outputs.jsonl")
