@@ -170,7 +170,7 @@ HTML = """<!doctype html>
 
     .controls {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+      grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(260px, auto);
       gap: 14px;
       align-items: end;
       padding: 20px;
@@ -227,6 +227,55 @@ HTML = """<!doctype html>
     button:disabled {
       opacity: .62;
       cursor: wait;
+    }
+
+    .run-actions {
+      display: grid;
+      grid-template-columns: minmax(150px, 1fr) auto;
+      gap: 12px;
+      align-items: stretch;
+    }
+
+    .important-btn {
+      position: relative;
+      min-width: 118px;
+      border: 1.5px solid #c40000;
+      background: #ffffe0;
+      color: #c40000;
+      padding: 0 14px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: .03em;
+      box-shadow: none;
+      cursor: help;
+    }
+
+    .important-btn::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      right: 0;
+      bottom: calc(100% + 10px);
+      z-index: 30;
+      display: none;
+      width: min(460px, 86vw);
+      padding: 12px 14px;
+      border: 1.5px solid #c40000;
+      border-radius: 6px;
+      background: #ffffe0;
+      color: #c40000;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, .18);
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 1.35;
+      letter-spacing: 0;
+      text-align: left;
+      text-transform: none;
+      white-space: normal;
+    }
+
+    .important-btn:hover::after,
+    .important-btn:focus::after {
+      display: block;
     }
 
     .status {
@@ -665,7 +714,7 @@ HTML = """<!doctype html>
     }
 
     .controls {
-      grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(138px, auto);
+      grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(282px, auto);
       gap: 18px;
       padding: 22px 24px;
       margin-bottom: 12px;
@@ -1166,7 +1215,10 @@ HTML = """<!doctype html>
       <label>Turns <input id="turns" type="number" min="1" max="10000" value="3000"></label>
       <label>Fields per Record <input id="fields" type="number" min="1" max="10" value="10"></label>
       <label>Episodes <input id="episodes" type="number" min="1" max="100" value="20"></label>
-      <button id="run">Verify + Package</button>
+      <div class="run-actions">
+        <button id="run">Verify + Package</button>
+        <button class="important-btn" type="button" data-tooltip="You can run multiple benchmark variations before deleting the instance. After each run, download that run's Auditable Evidence Folder if you want to keep it. Evidence folders are per-run and are not automatically combined. When done, stop/delete the Brev instance to avoid continuing charges.">IMPORTANT</button>
+      </div>
     </section>
     <p class="limits"><strong>Public demo limits:</strong> up to 10,000 turns, 10 fields, and 100 episodes. These caps keep browser response, result files, and Brev instance time predictable. Need a bigger or domain-specific run? <a href="https://telememetry.com/reproduce.html" target="_blank" rel="noopener">Request a custom benchmark</a>.</p>
 
