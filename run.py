@@ -212,6 +212,9 @@ def main() -> int:
     audit_prompt_template = Path("AUDIT_PROMPT.md")
     if audit_prompt_template.exists():
         shutil.copyfile(audit_prompt_template, run_dir / "AUDIT_PROMPT.md")
+    bundle_validator = Path("validate_bundle.py")
+    if bundle_validator.exists():
+        shutil.copyfile(bundle_validator, run_dir / "validate_bundle.py")
 
     verify_text = (
         "TeleMemetry public reproduce verification\n"
@@ -240,6 +243,7 @@ def main() -> int:
         f"Average bounded packet tokens per turn: {metrics['token_accounting']['average_packet_tokens_per_turn_estimate']}\n"
         f"Full-history replay baseline per turn: {full_history_tokens_per_turn}\n"
         f"Replay reduction estimate: {metrics['token_accounting']['replay_reduction_ratio_estimate']}x\n"
+        f"State density: tracking {len(fields)} telemetry fields across {args.episodes} independent operational episodes ({len(dataset)} source records)\n"
         "\n"
         "Benchmark scope\n"
         "- Exact operational-state recall within this public benchmark scope.\n"
@@ -266,14 +270,17 @@ def main() -> int:
     start_here_text = (
         "TeleMemetry Evidence Bundle - START HERE\n"
         "\n"
+        "Copy-paste this into your local IDE agent: Audit this folder. First run `python validate_bundle.py`, then verify that manifest.json hashes match the evidence files, confirm dataset/evidence/output row counts against metrics.json, validate 1:1 exact matches in outputs.jsonl, and confirm bounded packet tokens average matches the reported replay-reduction math.\n"
+        "\n"
         "Audience assumption: this analysis assumes the reviewer has a dedicated local AI or IDE agent with folder access to this extracted evidence bundle. It is not designed for browser-chat upload verification.\n"
         "\n"
         "Recommended workflow\n"
         "1. Extract the archive into a normal folder.\n"
         "2. Open that folder in an IDE or local AI agent that can read files from disk.\n"
         "3. Ask the agent to inspect this folder and begin with 01_QUICK_VALIDATION.txt.\n"
-        "4. For a deeper audit, ask it to inspect manifest.json, metrics.json, RESULT_SUMMARY.txt, VERIFY.txt, outputs.jsonl, evidence_packets.jsonl, and dataset.jsonl.\n"
-        "5. For a skeptical audit, use AUDIT_PROMPT.md after the agent has folder access.\n"
+        "4. Run `python validate_bundle.py` from this folder for a fast programmatic check.\n"
+        "5. For a deeper audit, ask it to inspect manifest.json, metrics.json, RESULT_SUMMARY.txt, VERIFY.txt, outputs.jsonl, evidence_packets.jsonl, and dataset.jsonl.\n"
+        "6. For a skeptical audit, use AUDIT_PROMPT.md after the agent has folder access.\n"
         "\n"
         "Do not paste the large JSONL files into a browser chat. They are intended for file inspection from the extracted folder.\n"
         "\n"
@@ -283,6 +290,7 @@ def main() -> int:
         "- AUDIT_PROMPT.md - skeptical independent audit prompt for folder-aware reviewers.\n"
         "- manifest.json - SHA256 receipts for evidence files.\n"
         "- metrics.json - reported benchmark measurements.\n"
+        "- validate_bundle.py - zero-dependency quick validator for hashes, row counts, exact matches, and token math.\n"
         "- outputs.jsonl, evidence_packets.jsonl, dataset.jsonl - raw audit evidence for local file inspection.\n"
     )
     (run_dir / "00_START_HERE.txt").write_text(start_here_text, encoding="utf-8", newline="\n")
@@ -292,6 +300,8 @@ def main() -> int:
         "**Audience assumption:** this analysis assumes the reviewer has a dedicated local AI or IDE agent with folder access to this extracted evidence bundle. It is not designed for browser-chat upload verification.\n"
         "\n"
         "Start with `00_START_HERE.txt`, then read `01_QUICK_VALIDATION.txt`.\n"
+        "\n"
+        "Fast path: run `python validate_bundle.py` from this folder.\n"
         "\n"
         "For a full audit, inspect `manifest.json`, `metrics.json`, `RESULT_SUMMARY.txt`, `VERIFY.txt`, `outputs.jsonl`, `evidence_packets.jsonl`, and `dataset.jsonl` directly from this folder.\n"
         "\n"
@@ -310,6 +320,7 @@ def main() -> int:
         f"- Launchable version: {metrics['launchable']['version']}\n"
         f"- Source commit: {metrics['launchable']['source_commit']}\n"
         f"- Scope: {args.turns} turns, {len(fields)} fields, {args.episodes} episodes, {len(dataset)} records\n"
+        f"- State density: tracking {len(fields)} telemetry fields across {args.episodes} independent operational episodes\n"
         f"- Verified recall: {verified} / {args.turns}\n"
         f"- Final verified output failures: {args.turns - verified}\n"
         f"- Exact match rate: {metrics['recall']['exact_match_rate']}\n"
@@ -318,7 +329,7 @@ def main() -> int:
         f"- Replay reduction estimate: {metrics['token_accounting']['replay_reduction_ratio_estimate']}x\n"
         "\n"
         "Folder-aware AI agent instruction\n"
-        "Inspect the extracted evidence folder. Do not rely on this brief alone. Check metrics.json and RESULT_SUMMARY.txt for reported values, VERIFY.txt for verification output, manifest.json for SHA256 receipts, and sample or scan outputs.jsonl/evidence_packets.jsonl/dataset.jsonl for exact-match evidence. If source code is unavailable, mark source-code execution objectives NOT TESTED, but still audit the supplied evidence files.\n"
+        "Inspect the extracted evidence folder. Do not rely on this brief alone. First run `python validate_bundle.py`. Then check metrics.json and RESULT_SUMMARY.txt for reported values, VERIFY.txt for verification output, manifest.json for SHA256 receipts, and sample or scan outputs.jsonl/evidence_packets.jsonl/dataset.jsonl for exact-match evidence. If source code is unavailable, mark source-code execution objectives NOT TESTED, but still audit the supplied evidence files.\n"
         "\n"
         "Supported by this bundle if file inspection confirms it\n"
         "- Scoped exact operational-state recall for the generated public benchmark.\n"
@@ -409,6 +420,8 @@ def main() -> int:
     (run_dir / "AI_AUDIT_PACKET.md").write_text(audit_packet_text, encoding="utf-8", newline="\n")
 
     manifest_files = ["dataset.jsonl", "evidence_packets.jsonl", "outputs.jsonl", "metrics.json", "launchable_version.json", "VERIFY.txt", "RESULT_SUMMARY.txt", "00_START_HERE.txt", "01_QUICK_VALIDATION.txt", "README.md", "AI_AUDIT_PACKET.md"]
+    if (run_dir / "validate_bundle.py").exists():
+        manifest_files.append("validate_bundle.py")
     if (run_dir / "prompt.md").exists():
         manifest_files.append("prompt.md")
     if (run_dir / "AUDIT_PROMPT.md").exists():

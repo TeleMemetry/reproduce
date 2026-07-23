@@ -109,6 +109,7 @@ Expected files:
 - `README.md` - evidence-bundle folder README
 - `prompt.md` - prompt for a local AI or IDE agent with folder access
 - `AUDIT_PROMPT.md` - skeptical audit prompt for challenging the result package and claim boundaries
+- `validate_bundle.py` - zero-dependency quick validator for hashes, counts, exact matches, and token math
 
 `verify.py` recomputes manifest hashes, source-record hashes, evidence-packet token estimates, replay-reduction math, and exact output matches from the generated artifacts.
 
@@ -168,6 +169,13 @@ python3 run.py --turns 10000 --fields 10 --episodes 20
 ## AI Review
 
 After running the benchmark, open `results/latest` as a folder in a local AI or IDE agent. Start with `00_START_HERE.txt`, then `01_QUICK_VALIDATION.txt`. The prompt asks the AI to inspect the metrics, receipts, scope, and supported claims.
+
+Fast path:
+
+```bash
+cd results/latest
+python validate_bundle.py
+```
 
 For a tougher review, use `results/latest/AUDIT_PROMPT.md` after the agent has folder access. That prompt asks the reviewer to inspect the code path, token math, SHA256 receipts, scale limits, scope leakage, and claims that remain outside this public reproduction kit.
 
