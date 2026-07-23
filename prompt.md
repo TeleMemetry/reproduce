@@ -1,6 +1,6 @@
 # AI Audit Prompt
 
-You are reviewing a TeleMemetry public reproduction result package.
+You are reviewing a TeleMemetry public reproduction result package. First upload the evidence-bundle ZIP or attach the listed files. Do not answer from this prompt alone.
 
 Inspect the attached or pasted files:
 

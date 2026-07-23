@@ -250,8 +250,8 @@ def main() -> int:
         "- Does not disclose TeleMemetry production engine internals.\n"
         "\n"
         "Review next steps\n"
-        "- Use prompt.md for standard AI-assisted review.\n"
-        "- Use AUDIT_PROMPT.md for skeptical review with the same result files.\n"
+        "- Upload the full evidence-bundle ZIP first, then paste prompt.md for standard AI-assisted review.\n"
+        "- Upload the full evidence-bundle ZIP first, then paste AUDIT_PROMPT.md for skeptical review. The reviewer must audit the attached files, not critique the prompt.\n"
     )
     (run_dir / "RESULT_SUMMARY.txt").write_text(summary_text, encoding="utf-8", newline="\n")
 

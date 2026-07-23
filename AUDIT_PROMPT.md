@@ -1,70 +1,107 @@
-# Independent Audit Prompt
+# Independent Evidence Bundle Audit
 
-Use this prompt with ChatGPT, Claude, Gemini, Codex, or another technical reviewer after running the TeleMemetry reproduce kit. It is intentionally skeptical. The goal is to identify what the public harness proves, what it does not prove, and what remains project-asserted until independently reproduced.
+You are not being asked to review or improve this prompt. You are being asked to audit the evidence bundle files supplied with it.
+
+Before starting, inspect the uploaded files in the same bundle as this prompt. Expected files include:
+
+- `manifest.json`
+- `metrics.json`
+- `dataset.jsonl`
+- `evidence_packets.jsonl`
+- `outputs.jsonl`
+- `RESULT_SUMMARY.txt`
+- `VERIFY.txt`
+- `prompt.md`
+
+Some generated bundles may also include `launchable_version.json`; if present, inspect it and compare it to any launchable/version fields in `metrics.json`.
+
+If those files are not attached or accessible, stop and say: **NOT TESTED - evidence bundle files were not provided or could not be read. Upload the evidence-bundle ZIP or attach the listed files.** Do not critique the prompt. Do not provide suggestions for improving the prompt unless explicitly asked after the audit.
+
+If the listed bundle files are accessible but source-code files such as `run.py` or `verify.py` are not accessible, proceed with the bundle-file audit anyway. Mark only the source-code and execution objectives `NOT TESTED`. Do not ask for repository files before auditing the supplied bundle.
 
 ## Role
 
-You are a skeptical technical reviewer validating claims made by the TeleMemetry reproduce repo and its published benchmark artifacts. Your job is to find where the evidence is solid and where it is not. Do not confirm the publisher's framing unless the artifacts support it.
+You are a skeptical technical reviewer validating claims made by the TeleMemetry evidence bundle and its published benchmark artifacts. Your job is to find where the evidence is solid and where it is not. Do not confirm the publisher's framing unless the files support it.
+
+## Evidence Rules
+
+- Every `PASS`, `PARTIAL`, `FAIL`, or `NOT TESTED` must cite exact evidence: file name, field name, line/sample, hash, terminal output, function name, or artifact path.
+- Use `NOT TESTED` whenever you could not inspect or execute the required step.
+- Do not infer behavior from README examples, site copy, or published benchmark claims.
+- Distinguish **file inspection evidence** from **runtime execution evidence**.
+- Report skipped steps.
+- If you run commands, record OS, Python version, package versions where available, and commit/version identifiers from the bundle.
+- If a benchmark cannot be executed, the result is `NOT TESTED`, not `PASS` or `FAIL`. Explain precisely what blocked execution.
 
 ## Context
 
 TeleMemetry claims verified, exact-match operational telemetry recall, bounded active context per turn versus full-history replay, and publishes:
 
 - A flagship Isaac Lab run: 100,000 / 100,000 verified outputs, 278 average context tokens per turn, 3,548x replay reduction, and 135.21W stress-test GPU power.
-- A public reproduce repo default run: 3,000 turns, 10 fields, 20 episodes, expected 3,000 / 3,000 verified, about 52.96 average tokens per turn, and about 192.79x replay reduction.
+- A public reproduce / launchable default run: 3,000 turns, 10 fields, 20 episodes, expected 3,000 / 3,000 verified, about 52.96 average tokens per turn, and about 192.79x replay reduction.
 - A preserved CelesTrak snapshot: 1,329 / 1,329 probes, 100% recall, dated 2026-06-01, explicitly labeled as not a currently running feed and not a sealed artifact.
 
 Validate each objective independently. Do not assume a prior objective holds.
 
 ## Objectives
 
-### 1. Reproduce the default benchmark
+### 1. Audit the supplied result bundle
 
-- Clone the repo fresh in an isolated environment with no cached state.
-- Run `python run.py`, then `python verify.py results/latest` per the README.
-- Confirm the actual output numbers: verified turns, final failures, average tokens per turn, and replay reduction.
+- Inspect `RESULT_SUMMARY.txt`, `VERIFY.txt`, `metrics.json`, `manifest.json`, `outputs.jsonl`, and `evidence_packets.jsonl`.
+- Confirm the actual reported numbers: verified turns, final failures, average tokens per turn, replay baseline, and replay reduction.
 - Report exact numbers produced. Flag any deviation, however small, and do not round in the publisher's favor.
 
-### 2. Inspect the verification logic
+### 2. Reproduce the default benchmark if code is available
 
-- Read `verify.py`, `run.py`, and any exactness-comparison code.
+- Do not block Objective 1 waiting for source code. This objective is separate from auditing the supplied result bundle.
+- If the reproduce repo code is available, clone or run it fresh in an isolated environment with no cached state.
+- Run `python run.py`, then `python verify.py results/latest` per the README or bundled instructions.
+- If code execution is not possible from the supplied bundle, mark this objective `NOT TESTED` and explain what files or environment are missing.
+
+### 3. Inspect the verification logic if code is available
+
+- Do not block Objective 1 waiting for source code. This objective is separate from auditing the supplied result bundle.
+- Read `verify.py`, `run.py`, and any exactness-comparison code if present.
 - Confirm verification is exact-match against stored reference values, not fuzzy or threshold matching.
 - Confirm the failure definition in code matches the docs: final output miss, missing evidence packet, or integrity failure.
 - Flag any verification path that is skipped, mocked, short-circuited, or merely documented instead of executed.
+- If code is not present, mark this objective `NOT TESTED`.
 
-### 3. Validate token and replay-reduction math
+### 4. Validate token and replay-reduction math
 
-- Locate where the full-history replay baseline is calculated.
-- Confirm whether it is calculated from the generated dataset and benchmark scope, or hardcoded as an assumed constant.
+- Locate where the full-history replay baseline appears in `metrics.json`, `RESULT_SUMMARY.txt`, code, or logs.
+- Confirm whether it is calculated from the generated dataset and benchmark scope, or only reported as a bundled metric.
 - State explicitly what the replay-reduction number includes and excludes.
 - Confirm that storage, routing, hashing, packaging, and verification costs are separate system costs and not counted as model-visible context tokens.
 
-### 4. Stress past the default scale
+### 5. Stress past the default scale if execution is available
 
-- Rerun with `--turns 10000 --fields 10 --episodes 20`, or higher if resources allow.
+- If runnable code is available, rerun with `--turns 10000 --fields 10 --episodes 20`, or higher if resources allow.
 - If the public harness enforces a documented cap, report the cap and explain why the cap exists rather than treating the cap itself as a failure.
 - Report whether recall stays at 100% or degrades, and at what scale failures first appear.
 - Do not extrapolate a 3k result to the 100k flagship run.
+- If execution is not possible, mark this objective `NOT TESTED`.
 
-### 5. Check for scope leakage
+### 6. Check for scope leakage
 
-- Confirm the benchmark dataset is deterministic and synthetic as claimed.
-- Confirm no network calls, credentials, or external dependencies are required for the local default run.
-- Flag anything that requires elevated privileges, network access, credentials, or undisclosed services.
+- Confirm whether the benchmark dataset is deterministic and synthetic as claimed.
+- Confirm whether the supplied result bundle shows any network calls, credentials, or external dependencies.
+- If code execution is performed, flag anything that requires elevated privileges, network access, credentials, hidden services, or undisclosed dependencies.
 
-### 6. Check SHA256 receipt integrity
+### 7. Check SHA256 receipt integrity
 
 - Independently recompute SHA256 hashes for result artifacts against `manifest.json`, outside any tooling the repo provides.
+- Use standard OS utilities where available: `sha256sum`, `shasum -a 256`, `certutil -hashfile`, or PowerShell `Get-FileHash`.
 - Confirm receipts describe final artifacts.
 - State clearly that same-storage receipts detect ordinary artifact changes, but do not by themselves prove protection against simultaneous malicious replacement of both artifact and receipt.
 
-### 7. Identify what remains unverified
+### 8. Identify what remains unverified
 
-Explicitly list every claim made in the site, docs, or result package that this repo does not and cannot validate, including:
+Explicitly list every claim made in the site, docs, or result package that this bundle does not and cannot validate, including:
 
-- The 100k Isaac Lab flagship run itself.
-- The CelesTrak preserved snapshot or any live feed.
-- The 135.21W stress-test GPU power figure.
+- The 100k Isaac Lab flagship run itself, unless the full artifact is attached and independently checked.
+- The CelesTrak preserved snapshot or any live feed, unless the exact artifact is attached and independently checked.
+- The 135.21W stress-test GPU power figure, unless raw power logs are attached and independently checked.
 - Latency under load or production TPS/RPS.
 - Behavior on non-synthetic, dirty, or schema-changing real-world telemetry.
 - Comparison against RAG, vector-store, or long-context baselines beyond the documented replay calculation.
@@ -72,18 +109,19 @@ Explicitly list every claim made in the site, docs, or result package that this 
 
 ## Output Format
 
-For each objective, return:
+Return a table with these columns:
 
-- `PASS`, `FAIL`, or `PARTIAL`
-- actual measured numbers
-- evidence inspected
-- one sentence on what would need to change for full validation
+| Objective | Status (PASS / FAIL / PARTIAL / NOT TESTED) | Evidence | Measured Values | Limitations | Requirement for Full Validation |
 
-End with a plain list of claims that remain project-asserted only, with no independent reproduction from this repo.
+Then end with:
+
+1. A plain list of claims independently supported by this bundle.
+2. A plain list of claims that remain project-asserted only.
+3. A plain list of skipped or not-tested steps.
 
 ## Constraints
 
-- Do not accept "matches documentation" as a result. Report actual numbers.
+- Do not accept "matches documentation" as a result. Report actual numbers from inspected files or executed commands.
 - Do not extrapolate results from the 3k run to the 100k run, or the 100k run to the 3k run.
-- Do not treat comments, docs, or marketing copy as proof of behavior. Trace actual execution.
-- Flag elevated privileges, network access, credentials, hidden services, or undisclosed dependencies.
+- Do not treat comments, docs, or marketing copy as proof of behavior. Use inspected files or runtime output.
+- Unsupported conclusions are not permitted.
