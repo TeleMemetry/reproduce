@@ -1199,19 +1199,19 @@ HTML = """<!doctype html>
     <p class="scope-note">This is a public reproduction harness, not the private production engine. It mathematically verifies this measurement workflow and proves the artifact trail.</p>
     <a class="hero-cta" href="#run-panel">Try the Docker Version of the TeleMemetry Engine</a>
 
-    <section class="postrun-note" aria-label="Post-run verification stage">
-      <h2>Post-run verification and packaging</h2>
-      <p>The benchmark execution has already completed before this stage begins. Full benchmark suites can take hours; this launchable verifies and packages completed artifacts, so the post-run step is intentionally fast.</p>
+    <section class="postrun-note" aria-label="Public reproduction and verification stage">
+      <h2>Public reproduction and verification</h2>
+      <p>This launchable runs the public reproduction harness, generates deterministic benchmark artifacts, verifies exact-match recall from those artifacts, and packages the evidence folder. It does not rerun or disclose the private TeleMemetry production engine.</p>
       <ul>
-        <li>Generate evidence artifacts from completed results.</li>
-        <li>Verify 1:1 recall against completed benchmark outputs.</li>
+        <li>Generate deterministic public evidence artifacts.</li>
+        <li>Verify 1:1 recall against generated benchmark outputs.</li>
         <li>Write deterministic SHA256 integrity receipts.</li>
         <li>Package files for independent human and AI review.</li>
       </ul>
     </section>
 
     <section class="controls" id="run-panel" aria-label="Benchmark controls">
-      <p class="runtime-note"><strong>Post-run stage:</strong> benchmark execution has already completed. Typical verification and packaging runtime is 20&ndash;60 seconds because this validates completed artifacts; it does not replay or rerun the original benchmark.</p>
+      <p class="runtime-note"><strong>Public reproduction stage:</strong> this runs the public harness and verification scripts, then packages the evidence folder. Typical runtime is 20&ndash;60 seconds because it is a deterministic reproduction harness, not the private production engine.</p>
       <label>Turns <input id="turns" type="number" min="1" max="10000" value="3000"></label>
       <label>Fields per Record <input id="fields" type="number" min="1" max="10" value="10"></label>
       <label>Episodes <input id="episodes" type="number" min="1" max="100" value="20"></label>
@@ -1222,7 +1222,7 @@ HTML = """<!doctype html>
     </section>
     <p class="limits"><strong>Public demo limits:</strong> up to 10,000 turns, 10 fields, and 100 episodes. These caps keep browser response, result files, and Brev instance time predictable. Need a bigger or domain-specific run? <a href="https://telememetry.com/reproduce.html" target="_blank" rel="noopener">Request a custom benchmark</a>.</p>
 
-    <p class="status" id="status">Ready for post-run verification. Recommended first package: 3,000 turns, 10 fields, 20 episodes.</p>
+    <p class="status" id="status">Ready for public reproduction and verification. Recommended first package: 3,000 turns, 10 fields, 20 episodes.</p>
     <div class="progress-bar" aria-label="Benchmark progress"><div class="progress-fill" id="progress-fill"></div></div>
 
     <section class="progress" aria-label="Progress">
@@ -1474,7 +1474,7 @@ HTML = """<!doctype html>
     resetUi();
     setRunning(true);
     var startedAt = Date.now();
-    statusEl.textContent = 'Post-run verification: generating evidence artifacts, checking 1:1 recall, writing SHA256 receipts, and packaging review files...';
+    statusEl.textContent = 'Public reproduction: generating evidence artifacts, checking 1:1 recall, writing SHA256 receipts, and packaging review files...';
     beginSteps();
 
     fetch('/run', {
@@ -1662,7 +1662,8 @@ class DemoHandler(BaseHTTPRequestHandler):
 def main() -> int:
     server = ThreadingHTTPServer(("0.0.0.0", 7860), DemoHandler)
     print("Launch TeleMemetry")
-    print("Open: http://127.0.0.1:7860")
+    print("Server running. Leave this terminal open.")
+    print("Open your browser and paste this into the address bar: http://127.0.0.1:7860")
     server.serve_forever()
     return 0
 

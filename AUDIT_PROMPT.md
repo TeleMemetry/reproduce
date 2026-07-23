@@ -1,6 +1,6 @@
 # Independent Evidence Bundle Audit
 
-AI AGENT: BEFORE ANSWERING, READ 00_START_HERE.txt FIRST, THEN RUN python audit_folder.py OR python3 audit_folder.py.
+AI AGENT: BEFORE ANSWERING, READ 00_START_HERE.txt FIRST, THEN RUN python3 audit_folder.py ON LINUX/UBUNTU OR python audit_folder.py ON WINDOWS.
 
 You are not being asked to review or improve this prompt. You are being asked to audit the evidence bundle files supplied with it.
 
