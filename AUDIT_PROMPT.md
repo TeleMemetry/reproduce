@@ -2,22 +2,31 @@
 
 You are not being asked to review or improve this prompt. You are being asked to audit the evidence bundle files supplied with it.
 
-Before starting, inspect the uploaded files in the same bundle as this prompt. Expected files include:
+Before starting, inspect the uploaded files supplied with this prompt. Many AI agents do not accept ZIP files. If ZIP upload is not supported, attach `AI_AUDIT_PACKET.md` or the individual files instead.
+
+Universal single-file option:
+
+- `AI_AUDIT_PACKET.md`
+
+Minimum file set for a useful audit:
 
 - `manifest.json`
 - `metrics.json`
-- `dataset.jsonl`
-- `evidence_packets.jsonl`
-- `outputs.jsonl`
 - `RESULT_SUMMARY.txt`
 - `VERIFY.txt`
 - `prompt.md`
 
+Additional files for deeper audit:
+
+- `dataset.jsonl`
+- `evidence_packets.jsonl`
+- `outputs.jsonl`
+
 Some generated bundles may also include `launchable_version.json`; if present, inspect it and compare it to any launchable/version fields in `metrics.json`.
 
-If those files are not attached or accessible, stop and say: **NOT TESTED - evidence bundle files were not provided or could not be read. Upload the evidence-bundle ZIP or attach the listed files.** Do not critique the prompt. Do not provide suggestions for improving the prompt unless explicitly asked after the audit.
+If neither `AI_AUDIT_PACKET.md` nor the minimum file set is attached or accessible, stop and say: **NOT TESTED - evidence files were not provided or could not be read. Attach AI_AUDIT_PACKET.md, or attach manifest.json, metrics.json, RESULT_SUMMARY.txt, VERIFY.txt, and prompt.md as individual files.** Do not critique the prompt. Do not provide suggestions for improving the prompt unless explicitly asked after the audit.
 
-If the listed bundle files are accessible but source-code files such as `run.py` or `verify.py` are not accessible, proceed with the bundle-file audit anyway. Mark only the source-code and execution objectives `NOT TESTED`. Do not ask for repository files before auditing the supplied bundle.
+If the minimum file set is accessible but the large JSONL files are not accessible, proceed with the file audit anyway. Mark raw-record inspection as `PARTIAL` or `NOT TESTED` as appropriate. If source-code files such as `run.py` or `verify.py` are not accessible, proceed with the bundle-file audit anyway. Mark only the source-code and execution objectives `NOT TESTED`. Do not ask for repository files before auditing the supplied files.
 
 ## Role
 

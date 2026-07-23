@@ -1,12 +1,20 @@
 # AI Audit Prompt
 
-You are reviewing a TeleMemetry public reproduction result package. First upload the evidence-bundle ZIP or attach the listed files. Do not answer from this prompt alone.
+You are reviewing a TeleMemetry public reproduction result package. If file uploads are limited, attach `AI_AUDIT_PACKET.md` first. If your AI assistant accepts multiple files, attach the listed files individually. If it accepts ZIP files, the evidence-bundle ZIP is okay. Do not answer from this prompt alone.
 
-Inspect the attached or pasted files:
+Universal single-file option:
+
+- `AI_AUDIT_PACKET.md`
+
+Minimum multi-file option:
 
 - `metrics.json`
 - `manifest.json`
 - `VERIFY.txt`
+- `RESULT_SUMMARY.txt`
+
+Full audit files, if the assistant accepts larger files:
+
 - `dataset.jsonl`
 - `evidence_packets.jsonl`
 - `outputs.jsonl`
