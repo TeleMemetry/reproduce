@@ -11,7 +11,7 @@ import zipfile
 from io import BytesIO
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlparse
 
 
 ROOT = Path(__file__).resolve().parent
@@ -1161,13 +1161,13 @@ HTML = """<!doctype html>
       </ul>
     </section>
 
-    <section class="controls" id="run-panel" aria-label="Benchmark controls">
+    <form class="controls" id="run-panel" aria-label="Benchmark controls" action="/run-form" method="get">
       <p class="runtime-note"><strong>Post-run stage:</strong> benchmark execution has already completed. Typical verification and packaging runtime is 20&ndash;60 seconds because this validates completed artifacts; it does not replay or rerun the original benchmark.</p>
-      <label>Turns <input id="turns" type="number" min="1" max="10000" value="3000"></label>
-      <label>Fields per Record <input id="fields" type="number" min="1" max="10" value="10"></label>
-      <label>Episodes <input id="episodes" type="number" min="1" max="100" value="20"></label>
-      <button id="run">Verify + Package</button>
-    </section>
+      <label>Turns <input id="turns" name="turns" type="number" min="1" max="10000" value="3000"></label>
+      <label>Fields per Record <input id="fields" name="fields" type="number" min="1" max="10" value="10"></label>
+      <label>Episodes <input id="episodes" name="episodes" type="number" min="1" max="100" value="20"></label>
+      <button id="run" type="submit">Verify + Package</button>
+    </form>
     <p class="limits"><strong>Public demo limits:</strong> up to 10,000 turns, 10 fields, and 100 episodes. These caps keep browser response, result files, and Brev instance time predictable. Need a bigger or domain-specific run? <a href="https://telememetry.com/reproduce.html" target="_blank" rel="noopener">Request a custom benchmark</a>.</p>
 
     <p class="status" id="status">Ready for post-run verification. Recommended first package: 3,000 turns, 10 fields, 20 episodes.</p>
@@ -1234,6 +1234,7 @@ HTML = """<!doctype html>
 </main>
 <script>
   var runButton = document.getElementById('run');
+  var runForm = document.getElementById('run-panel');
   var statusEl = document.getElementById('status');
   var logEl = document.getElementById('log');
   var logWrapEl = document.getElementById('log-wrap');
@@ -1456,7 +1457,10 @@ HTML = """<!doctype html>
     copyTextWithFeedback(copyLogButton, logEl.textContent || '', 'Copied', 'Copy output');
   });
 
-  runButton.addEventListener('click', function () {
+  function submitRun(event) {
+    if (event && event.preventDefault) {
+      event.preventDefault();
+    }
     try {
       resetUi();
       setRunning(true);
@@ -1496,6 +1500,11 @@ HTML = """<!doctype html>
       logEl.style.display = 'block';
       logEl.textContent = String(error);
     }
+  }
+
+  runForm.addEventListener('submit', submitRun);
+  runButton.addEventListener('click', function () {
+    statusEl.textContent = 'Starting verification request...';
   });
 
   loadLatestPreview();
@@ -1549,6 +1558,28 @@ class DemoHandler(BaseHTTPRequestHandler):
         version = launchable.get("version", "unknown")
         return f"{turns}-{fields}-{episodes}-v{version}-telememetry-evidence-bundle.{extension}"
 
+    def parse_run_params(self, values: dict) -> tuple[int, int, int]:
+        turns = int(values.get("turns", 3000))
+        fields = int(values.get("fields", 10))
+        episodes = int(values.get("episodes", 20))
+        if turns < 1 or turns > MAX_TURNS or fields < 1 or fields > MAX_FIELDS or episodes < 1 or episodes > MAX_EPISODES:
+            raise ValueError(f"public demo limits are {MAX_TURNS} turns, {MAX_FIELDS} fields, and {MAX_EPISODES} episodes")
+        return turns, fields, episodes
+
+    def run_package(self, turns: int, fields: int, episodes: int) -> dict:
+        run_cmd = [sys.executable, "run.py", "--turns", str(turns), "--fields", str(fields), "--episodes", str(episodes)]
+        verify_cmd = [sys.executable, "verify.py", "results/latest"]
+        run_result = subprocess.run(run_cmd, cwd=ROOT, text=True, capture_output=True, check=True)
+        verify_result = subprocess.run(verify_cmd, cwd=ROOT, text=True, capture_output=True, check=True)
+        metrics = json.loads((ROOT / "results/latest/metrics.json").read_text(encoding="utf-8"))
+        summary = (ROOT / "results/latest/RESULT_SUMMARY.txt").read_text(encoding="utf-8")
+        return {
+            "ok": True,
+            "metrics": metrics,
+            "summary": summary,
+            "output": run_result.stdout + verify_result.stdout,
+        }
+
     def do_GET(self) -> None:
         parsed = urlparse(self.path)
         if parsed.path == "/":
@@ -1556,6 +1587,24 @@ class DemoHandler(BaseHTTPRequestHandler):
             return
         if parsed.path == "/favicon.svg":
             self.send_bytes(200, FAVICON_SVG.encode("utf-8"), "image/svg+xml; charset=utf-8")
+            return
+        if parsed.path == "/run-form":
+            params = {key: values[0] for key, values in parse_qs(parsed.query).items()}
+            try:
+                turns, fields, episodes = self.parse_run_params(params)
+                result = self.run_package(turns, fields, episodes)
+                body = (
+                    result["summary"]
+                    + "\n"
+                    + result["output"]
+                    + "\nResult files are available in results/latest. Download an evidence bundle or open the folder with a local AI or IDE agent.\n"
+                )
+                self.send_bytes(200, body.encode("utf-8"), "text/plain; charset=utf-8")
+            except ValueError as exc:
+                self.send_bytes(400, f"Invalid run request: {exc}\n".encode("utf-8"), "text/plain; charset=utf-8")
+            except subprocess.CalledProcessError as exc:
+                body = "Benchmark command failed\n\n" + (exc.stdout or "") + (exc.stderr or "")
+                self.send_bytes(500, body.encode("utf-8"), "text/plain; charset=utf-8")
             return
         if parsed.path == "/latest":
             metrics_path = ROOT / "results/latest/metrics.json"
@@ -1626,31 +1675,17 @@ class DemoHandler(BaseHTTPRequestHandler):
 
         length = int(self.headers.get("Content-Length", "0"))
         payload = json.loads(self.rfile.read(length) or b"{}")
-        turns = int(payload.get("turns", 3000))
-        fields = int(payload.get("fields", 10))
-        episodes = int(payload.get("episodes", 20))
-
-        if turns < 1 or turns > MAX_TURNS or fields < 1 or fields > MAX_FIELDS or episodes < 1 or episodes > MAX_EPISODES:
+        try:
+            turns, fields, episodes = self.parse_run_params(payload)
+        except ValueError as exc:
             self.send_json(400, {
                 "ok": False,
-                "error": f"public demo limits are {MAX_TURNS} turns, {MAX_FIELDS} fields, and {MAX_EPISODES} episodes",
+                "error": str(exc),
             })
             return
 
-        run_cmd = [sys.executable, "run.py", "--turns", str(turns), "--fields", str(fields), "--episodes", str(episodes)]
-        verify_cmd = [sys.executable, "verify.py", "results/latest"]
-
         try:
-            run_result = subprocess.run(run_cmd, cwd=ROOT, text=True, capture_output=True, check=True)
-            verify_result = subprocess.run(verify_cmd, cwd=ROOT, text=True, capture_output=True, check=True)
-            metrics = json.loads((ROOT / "results/latest/metrics.json").read_text(encoding="utf-8"))
-            summary = (ROOT / "results/latest/RESULT_SUMMARY.txt").read_text(encoding="utf-8")
-            self.send_json(200, {
-                "ok": True,
-                "metrics": metrics,
-                "summary": summary,
-                "output": run_result.stdout + verify_result.stdout,
-            })
+            self.send_json(200, self.run_package(turns, fields, episodes))
         except subprocess.CalledProcessError as exc:
             self.send_json(500, {
                 "ok": False,

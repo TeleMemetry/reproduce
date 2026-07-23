@@ -108,6 +108,10 @@ def main() -> int:
     generated_at = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     out_root = Path(args.out)
     run_dir = out_root / f"run-{generated_at}"
+    suffix = 1
+    while run_dir.exists():
+        suffix += 1
+        run_dir = out_root / f"run-{generated_at}-{suffix}"
     run_dir.mkdir(parents=True, exist_ok=False)
 
     dataset = []
